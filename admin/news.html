@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة الأخبار - لوحة التحكم</title>
+  <link rel="stylesheet" href="assets/css/admin.css">
+  <link rel="icon" href="../specialneed-bsu/assets/images/logo.png" type="image/png">
+  <style>
+    .news-img-cell {
+      width: 72px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      background: var(--primary-light);
+      border: 1px solid var(--border);
+    }
+    .news-img-placeholder {
+      width: 72px;
+      height: 52px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--primary), var(--primary-mid));
+      flex-shrink: 0;
+    }
+    .news-title-cell { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.5; }
+    .news-summary-cell {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* محرر النص */
+    .rich-toolbar {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      padding: 8px 10px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+    .rich-btn {
+      padding: 4px 9px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      color: var(--text);
+      transition: var(--transition);
+    }
+    .rich-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+    .rich-content {
+      width: 100%;
+      min-height: 180px;
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      transition: var(--transition);
+    }
+    .rich-content:focus { border-color: var(--primary); }
+    /* معاينة الصورة */
+    .img-preview-box {
+      width: 100%;
+      height: 160px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: var(--transition);
+      background: var(--bg);
+      position: relative;
+    }
+    .img-preview-box:hover { border-color: var(--primary); background: var(--primary-light); }
+    .img-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .img-preview-box img.show { display: block; }
+    .img-preview-box .upload-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 13px;
+      text-align: center;
+    }
+    .img-preview-box .upload-hint svg { opacity: 0.4; }
+    .img-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10,61,122,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .img-preview-box:hover .img-overlay { display: flex; }
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <div id="admin-sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div id="admin-header"></div>
+    <div class="page-content">
+
+      <!-- عنوان الصفحة -->
+      <div class="page-header">
+        <div>
+          <h1>إدارة الأخبار</h1>
+          <p>إضافة وتعديل وحذف الأخبار وإدارة التصنيفات</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          إضافة خبر جديد
+        </button>
+      </div>
+
+      <!-- شريط البحث والفلترة -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-body" style="padding:12px 16px;">
+          <div class="toolbar">
+            <div class="search-input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" class="search-input" id="search-input"
+                     placeholder="بحث في عنوان الخبر..."
+                     oninput="renderTable()">
+            </div>
+            <select class="form-control" style="width:160px;" id="filter-cat" onchange="renderTable()">
+              <option value="">كل التصنيفات</option>
+            </select>
+            <select class="form-control" style="width:140px;" id="filter-status" onchange="renderTable()">
+              <option value="">كل الحالات</option>
+              <option value="published">منشور</option>
+              <option value="hidden">مخفي</option>
+            </select>
+            <span class="badge badge-primary" id="result-count">0 خبر</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- الجدول -->
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>الصورة</th>
+                <th>عنوان الخبر</th>
+                <th>التصنيف</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="news-tbody">
+              <tr class="loading-row">
+                <td colspan="7">جاري تحميل البيانات...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== مودال الإضافة / التعديل ===== -->
+<div class="modal-overlay" id="news-modal" onclick="closeModalOnOverlay(event,'news-modal')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="modal-title">إضافة خبر جديد</h3>
+      <button class="modal-close" onclick="closeModal('news-modal')">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="f-id">
+
+      <div class="form-grid-2" style="margin-bottom:16px;">
+        <!-- العمود الأيمن -->
+        <div>
+          <div class="form-group">
+            <label class="form-label">عنوان الخبر <span class="req">*</span></label>
+            <input type="text" class="form-control" id="f-title" placeholder="أدخل عنوان الخبر كاملاً">
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">التصنيف <span class="req">*</span></label>
+              <select class="form-control" id="f-category">
+                <option value="أخبار الكلية">أخبار الكلية</option>
+                <option value="ورش عمل">ورش عمل</option>
+                <option value="إنجازات">إنجازات</option>
+                <option value="زيارات">زيارات</option>
+                <option value="برامج أكاديمية">برامج أكاديمية</option>
+                <option value="إعلانات">إعلانات</option>
+                <option value="مؤتمرات">مؤتمرات</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">تاريخ النشر <span class="req">*</span></label>
+              <input type="date" class="form-control" id="f-date">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ملخص الخبر <span class="req">*</span></label>
+            <textarea class="form-control" id="f-summary" rows="3"
+                      placeholder="ملخص مختصر يظهر في قائمة الأخبار (150-200 حرف)..."></textarea>
+            <div class="form-hint">يظهر في بطاقة الخبر في الصفحة الرئيسية وصفحة الأخبار</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;">
+              <span>حالة النشر</span>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;">
+                <input type="checkbox" id="f-published" checked style="cursor:pointer;">
+                <span style="font-size:13px;" id="publish-label">منشور</span>
+              </label>
+            </label>
+          </div>
+        </div>
+
+        <!-- العمود الأيسر - الصورة -->
+        <div>
+          <div class="form-group">
+            <label class="form-label">صورة الخبر</label>
+            <div class="img-preview-box" onclick="document.getElementById('img-input').click()">
+              <div class="upload-hint" id="upload-hint">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                اضغط لرفع صورة الخبر
+                <span style="font-size:11px;">JPG أو PNG بحد أقصى 5MB</span>
+              </div>
+              <img id="img-preview" alt="صورة الخبر">
+              <div class="img-overlay">تغيير الصورة</div>
+            </div>
+            <input type="file" id="img-input" accept="image/*" style="display:none;">
+            <input type="hidden" id="f-image">
+          </div>
+        </div>
+      </div>
+
+      <!-- محتوى الخبر الكامل -->
+      <div class="form-group">
+        <label class="form-label">محتوى الخبر الكامل <span class="req">*</span></label>
+        <div class="rich-toolbar">
+          <button class="rich-btn" onclick="formatText('bold')" title="عريض"><b>B</b></button>
+          <button class="rich-btn" onclick="formatText('italic')" title="مائل"><i>I</i></button>
+          <button class="rich-btn" onclick="formatText('underline')" title="تحت خط"><u>U</u></button>
+          <button class="rich-btn" onclick="insertNewPara()" title="فقرة جديدة">&#182;</button>
+        </div>
+        <textarea class="rich-content" id="f-content"
+                  placeholder="اكتب محتوى الخبر الكامل هنا..."></textarea>
+        <div class="form-hint">هذا النص يظهر عند فتح الخبر كاملاً</div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveNews()">حفظ الخبر</button>
+      <button class="btn btn-ghost" onclick="closeModal('news-modal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/admin.js"></script>
+<script>
+  'use strict';
+
+  let newsData = null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    checkAuth();
+    buildLayout('news');
+
+    newsData = await getData('news');
+    if (!newsData) newsData = { news: [], categories: [] };
+
+    // تعبئة التصنيفات في الفلتر
+    const catFilter = document.getElementById('filter-cat');
+    (newsData.categories || []).forEach(c => {
+      catFilter.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+
+    // تاريخ اليوم افتراضي
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+    // checkbox النشر
+    document.getElementById('f-published').addEventListener('change', function () {
+      document.getElementById('publish-label').textContent = this.checked ? 'منشور' : 'مخفي';
+    });
+
+    // رفع الصورة
+    handleImageUpload(
+      document.getElementById('img-input'),
+      null,
+      (url) => {
+        if (!url) return; // فشل الرفع — لا تحفظ شيئاً
+        document.getElementById('f-image').value = url;
+        const preview = document.getElementById('img-preview');
+        preview.src = url;
+        preview.classList.add('show');
+        document.getElementById('upload-hint').style.display = 'none';
+      },
+      'news'
+    );
+
+    renderTable();
+
+    // لو فيه ?action=add
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'add') openAddModal();
+    const editId = params.get('edit');
+    if (editId) openEditModal(editId);
+  });
+
+  /* ===== عرض الجدول ===== */
+  function renderTable() {
+    const tbody    = document.getElementById('news-tbody');
+    const query    = document.getElementById('search-input').value.trim().toLowerCase();
+    const catF     = document.getElementById('filter-cat').value;
+    const statusF  = document.getElementById('filter-status').value;
+
+    let items = newsData?.news || [];
+
+    if (query)   items = items.filter(n => n.title.toLowerCase().includes(query));
+    if (catF)    items = items.filter(n => n.category === catF);
+    if (statusF === 'published') items = items.filter(n => n.published);
+    if (statusF === 'hidden')    items = items.filter(n => !n.published);
+
+    document.getElementById('result-count').textContent = `${items.length} خبر`;
+
+    if (!items.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">لا توجد أخبار</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = items.map((n, i) => `
+      <tr>
+        <td style="color:var(--text-muted);font-size:12px;">${i + 1}</td>
+        <td>
+          ${n.image
+            ? (n.image.startsWith('data:')
+                ? `<img src="${n.image}" class="news-img-cell" onerror="this.style.display='none'">`
+                : `<img src="../specialneed-bsu/assets/images/${n.image}" class="news-img-cell" onerror="this.style.display='none'">`)
+            : `<div class="news-img-placeholder"></div>`}
+        </td>
+        <td>
+          <div class="news-title-cell">${n.title}</div>
+          <div class="news-summary-cell">${n.summary || ''}</div>
+        </td>
+        <td><span class="badge badge-primary">${n.category || ''}</span></td>
+        <td style="font-size:12px;white-space:nowrap;">${formatDate(n.date)}</td>
+        <td>
+          <span class="badge ${n.published ? 'badge-success' : 'badge-danger'}">
+            ${n.published ? 'منشور' : 'مخفي'}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm btn-icon" onclick="togglePublish('${n.id}')"
+                    title="${n.published ? 'إخفاء' : 'نشر'}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                ${n.published
+                  ? `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                     <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                     <line x1="1" y1="1" x2="23" y2="23"/>`
+                  : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                     <circle cx="12" cy="12" r="3"/>`}
+              </svg>
+            </button>
+            <button class="btn btn-ghost btn-sm btn-icon" onclick="openEditModal('${n.id}')" title="تعديل">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteNews('${n.id}')" title="حذف">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  /* ===== فتح مودال الإضافة ===== */
+  function openAddModal() {
+    document.getElementById('modal-title').textContent = 'إضافة خبر جديد';
+    clearForm();
+    openModal('news-modal');
+  }
+
+  /* ===== فتح مودال التعديل ===== */
+  function openEditModal(id) {
+    const n = (newsData?.news || []).find(x => x.id === id);
+    if (!n) return;
+
+    document.getElementById('modal-title').textContent = 'تعديل الخبر';
+    document.getElementById('f-id').value        = n.id;
+    document.getElementById('f-title').value     = n.title     || '';
+    document.getElementById('f-category').value  = n.category  || 'أخبار الكلية';
+    document.getElementById('f-date').value      = n.date      || '';
+    document.getElementById('f-summary').value   = n.summary   || '';
+    document.getElementById('f-content').value   = n.content   || '';
+    document.getElementById('f-image').value     = n.image     || '';
+    document.getElementById('f-published').checked = n.published !== false;
+    document.getElementById('publish-label').textContent = n.published !== false ? 'منشور' : 'مخفي';
+
+    const preview = document.getElementById('img-preview');
+    if (n.image) {
+      preview.src = n.image.startsWith('data:')
+        ? n.image
+        : `../specialneed-bsu/assets/images/${n.image}`;
+      preview.classList.add('show');
+      document.getElementById('upload-hint').style.display = 'none';
+    } else {
+      preview.classList.remove('show');
+      document.getElementById('upload-hint').style.display = 'flex';
+    }
+
+    openModal('news-modal');
+  }
+
+  /* ===== تفريغ الفورم ===== */
+  function clearForm() {
+    document.getElementById('f-id').value      = '';
+    document.getElementById('f-title').value   = '';
+    document.getElementById('f-summary').value = '';
+    document.getElementById('f-content').value = '';
+    document.getElementById('f-image').value   = '';
+    document.getElementById('f-category').value = 'أخبار الكلية';
+    document.getElementById('f-date').value    = new Date().toISOString().split('T')[0];
+    document.getElementById('f-published').checked = true;
+    document.getElementById('publish-label').textContent = 'منشور';
+    document.getElementById('img-preview').classList.remove('show');
+    document.getElementById('upload-hint').style.display = 'flex';
+  }
+
+  /* ===== حفظ الخبر ===== */
+  function saveNews() {
+    const id        = document.getElementById('f-id').value;
+    const title     = document.getElementById('f-title').value.trim();
+    const category  = document.getElementById('f-category').value;
+    const date      = document.getElementById('f-date').value;
+    const summary   = document.getElementById('f-summary').value.trim();
+    const content   = document.getElementById('f-content').value.trim();
+    const image     = document.getElementById('f-image').value;
+    const published = document.getElementById('f-published').checked;
+
+    if (!title)   { showToast('الرجاء إدخال عنوان الخبر', 'danger'); return; }
+    if (!summary) { showToast('الرجاء إدخال ملخص الخبر', 'danger'); return; }
+    if (!content) { showToast('الرجاء إدخال محتوى الخبر', 'danger'); return; }
+    if (!date)    { showToast('الرجاء اختيار تاريخ النشر', 'danger'); return; }
+
+    const newsObj = {
+      id:        id || generateId(),
+      title, category, date, summary, content, published,
+      image:     image || ''
+    };
+
+    if (!newsData.news) newsData.news = [];
+
+    if (id) {
+      const idx = newsData.news.findIndex(n => n.id === id);
+      if (idx >= 0) newsData.news[idx] = newsObj;
+    } else {
+      newsData.news.unshift(newsObj);
+    }
+
+    saveData('news', newsData);
+    renderTable();
+    closeModal('news-modal');
+    showToast(id ? 'تم تحديث الخبر بنجاح' : 'تمت إضافة الخبر بنجاح');
+  }
+
+  /* ===== تبديل حالة النشر ===== */
+  function togglePublish(id) {
+    const idx = newsData.news.findIndex(n => n.id === id);
+    if (idx < 0) return;
+    newsData.news[idx].published = !newsData.news[idx].published;
+    saveData('news', newsData);
+    renderTable();
+    showToast(newsData.news[idx].published ? 'تم نشر الخبر' : 'تم إخفاء الخبر');
+  }
+
+  /* ===== حذف الخبر ===== */
+  function deleteNews(id) {
+    const n = newsData.news.find(x => x.id === id);
+    showConfirm(
+      `هل أنت متأكد من حذف "${truncate(n?.title || '', 40)}"؟`,
+      () => {
+        newsData.news = newsData.news.filter(x => x.id !== id);
+        saveData('news', newsData);
+        renderTable();
+        showToast('تم حذف الخبر بنجاح', 'danger');
+      }
+    );
+  }
+
+  /* ===== تنسيق النص ===== */
+  function formatText(cmd) {
+    const ta = document.getElementById('f-content');
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    const sel   = ta.value.substring(start, end);
+    if (!sel) return;
+
+    const tags = { bold: ['**','**'], italic: ['_','_'], underline: ['<u>','</u>'] };
+    const [open, close] = tags[cmd] || ['',''];
+    ta.value = ta.value.substring(0, start) + open + sel + close + ta.value.substring(end);
+    ta.focus();
+  }
+
+  function insertNewPara() {
+    const ta  = document.getElementById('f-content');
+    const pos = ta.selectionStart;
+    ta.value  = ta.value.substring(0, pos) + '\n\n' + ta.value.substring(pos);
+    ta.selectionStart = ta.selectionEnd = pos + 2;
+    ta.focus();
+  }
+</script>
+</body>
+</html>
