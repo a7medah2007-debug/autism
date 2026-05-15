@@ -1,0 +1,166 @@
+{
+  "department_head": {
+    "id": "head_001",
+    "name": "أ.د. محمد أحمد عبد الله",
+    "title": "أستاذ دكتور",
+    "position": "رئيس القسم",
+    "specialization": "تربية ذوي الاحتياجات الخاصة",
+    "email": "head@specialneed.bsu.edu.eg",
+    "phone": "082-XXXXXXX",
+    "image": "staff/head.jpg",
+    "cv": "",
+    "bio": "أستاذ متخصص في مجال تربية ذوي الاحتياجات الخاصة وتعليم الأطفال التوحديين، يحمل خبرة تزيد عن عشرين عاماً في التدريس والبحث العلمي."
+  },
+  "professors": [
+    {
+      "id": "prof_001",
+      "name": "أ.د. سمير محمود حسن",
+      "title": "أستاذ دكتور",
+      "position": "أستاذ",
+      "specialization": "علم نفس ذوي الاحتياجات الخاصة",
+      "email": "s.hassan@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/prof_001.jpg",
+      "cv": "",
+      "bio": ""
+    },
+    {
+      "id": "prof_002",
+      "name": "أ.د. هناء عبد الرحمن علي",
+      "title": "أستاذ دكتور",
+      "position": "أستاذ",
+      "specialization": "اضطرابات النطق والكلام",
+      "email": "h.ali@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/prof_002.jpg",
+      "cv": "",
+      "bio": ""
+    },
+    {
+      "id": "prof_003",
+      "name": "أ.د. خالد إبراهيم مصطفى",
+      "title": "أستاذ دكتور",
+      "position": "أستاذ",
+      "specialization": "الإعاقة الذهنية والتأخر الدراسي",
+      "email": "k.mostafa@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/prof_003.jpg",
+      "cv": "",
+      "bio": ""
+    }
+  ],
+  "associate_professors": [
+    {
+      "id": "assoc_001",
+      "name": "د. منى سعد الدين",
+      "title": "دكتور",
+      "position": "أستاذ مساعد",
+      "specialization": "التوحد واضطرابات التواصل",
+      "email": "m.saad@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/assoc_001.jpg",
+      "cv": "",
+      "bio": ""
+    },
+    {
+      "id": "assoc_002",
+      "name": "د. وائل عصام فؤاد",
+      "title": "دكتور",
+      "position": "أستاذ مساعد",
+      "specialization": "صعوبات التعلم",
+      "email": "w.fouad@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/assoc_002.jpg",
+      "cv": "",
+      "bio": ""
+    },
+    {
+      "id": "assoc_003",
+      "name": "د. رانيا محمد الشريف",
+      "title": "دكتور",
+      "position": "أستاذ مساعد",
+      "specialization": "الإعاقة البصرية وتقنيات التعويض",
+      "email": "r.sharif@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/assoc_003.jpg",
+      "cv": "",
+      "bio": ""
+    }
+  ],
+  "lecturers": [
+    {
+      "id": "lect_001",
+      "name": "د. أحمد سامي النجار",
+      "title": "دكتور",
+      "position": "مدرس",
+      "specialization": "التوحد والتدخل المبكر",
+      "email": "a.najjar@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/lect_001.jpg",
+      "cv": "",
+      "bio": ""
+    },
+    {
+      "id": "lect_002",
+      "name": "د. دينا حسام عمر",
+      "title": "دكتور",
+      "position": "مدرس",
+      "specialization": "الإعاقة السمعية ولغة الإشارة",
+      "email": "d.omar@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/lect_002.jpg",
+      "cv": "",
+      "bio": ""
+    }
+  ],
+  "assistants": [
+    {
+      "id": "asst_001",
+      "name": "م. كريم طارق علي",
+      "title": "معيد",
+      "position": "معيد",
+      "specialization": "تربية خاصة",
+      "email": "k.ali@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/asst_001.jpg",
+      "cv": "",
+      "bio": ""
+    },
+    {
+      "id": "asst_002",
+      "name": "م. نورهان يوسف سالم",
+      "title": "معيدة",
+      "position": "معيد",
+      "specialization": "علم نفس تربوي",
+      "email": "n.salem@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/asst_002.jpg",
+      "cv": "",
+      "bio": ""
+    },
+    {
+      "id": "asst_003",
+      "name": "م. عمر حسني رضا",
+      "title": "معيد",
+      "position": "معيد",
+      "specialization": "اضطرابات التواصل",
+      "email": "o.reda@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/asst_003.jpg",
+      "cv": "",
+      "bio": ""
+    },
+    {
+      "id": "asst_004",
+      "name": "م. سارة محمود عطية",
+      "title": "معيدة",
+      "position": "معيد",
+      "specialization": "التربية الخاصة",
+      "email": "s.attia@specialneed.bsu.edu.eg",
+      "phone": "",
+      "image": "staff/asst_004.jpg",
+      "cv": "",
+      "bio": ""
+    }
+  ]
+}

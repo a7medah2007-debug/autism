@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>كلية علوم ذوي الاحتياجات الخاصة - جامعة بني سويف</title>
+  <meta name="description" content="الموقع الرسمي لكلية علوم ذوي الاحتياجات الخاصة - جامعة بني سويف">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <style>
+    /* ===== السلايدر ===== */
+    .slider-section {
+      position: relative;
+      height: 420px;
+      overflow: hidden;
+      background: var(--color-primary);
+    }
+    .slider-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .slide.active { opacity: 1; }
+    .slide-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-color: var(--color-primary);
+    }
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to left,
+        rgba(10,61,122,0.75) 0%,
+        rgba(10,61,122,0.45) 60%,
+        rgba(10,61,122,0.20) 100%
+      );
+    }
+    .slide-content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 80px;
+      max-width: 680px;
+    }
+    .slide-content h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .slide-content p {
+      font-size: 15px;
+      color: rgba(255,255,255,0.90);
+      line-height: 1.7;
+    }
+    .slider-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      width: 42px;
+      height: 42px;
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.35);
+      color: #fff;
+      font-size: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .slider-arrow:hover { background: rgba(255,255,255,0.28); }
+    .slider-arrow-next { left: 20px; }
+    .slider-arrow-prev { right: 20px; }
+    .slider-dots {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.45);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      padding: 0;
+    }
+    .dot.active {
+      background: #fff;
+      width: 28px;
+      border-radius: 5px;
+    }
+
+    /* ===== الشريط السريع ===== */
+    .quick-bar {
+      background: var(--color-primary-light);
+      border-bottom: 1px solid var(--color-border);
+      padding: 7px 0;
+    }
+    .quick-links {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .quick-links a {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-primary);
+      padding: 4px 16px;
+      border-left: 1px solid var(--color-border);
+      transition: var(--transition);
+    }
+    .quick-links a:last-child { border-left: none; }
+    .quick-links a:hover { color: var(--color-gold); }
+
+    /* ===== المحتوى ===== */
+    .section-wrap {
+      padding: 36px 0;
+      background: var(--color-bg);
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 330px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ===== قائمة الأخبار ===== */
+    .news-list {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #fff;
+    }
+    .news-item {
+      display: flex;
+      gap: 12px;
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--color-border);
+      transition: var(--transition);
+      align-items: flex-start;
+    }
+    .news-item:last-child { border-bottom: none; }
+    .news-item:hover { background: var(--color-primary-light); }
+    .news-item-img {
+      width: 88px;
+      height: 66px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+    .news-item-placeholder {
+      width: 88px;
+      height: 66px;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-mid));
+    }
+    .news-item-body { flex: 1; min-width: 0; }
+    .news-item-cat {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--color-primary);
+      padding: 2px 7px;
+      border-radius: 2px;
+      margin-bottom: 4px;
+    }
+    .news-item-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.55;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .news-item-title a { color: inherit; }
+    .news-item-title a:hover { color: var(--color-primary); }
+    .news-item-date { font-size: 11px; color: var(--color-text-muted); }
+
+    /* ===== كلمة رئيس القسم ===== */
+    .dean-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .dean-img-wrap {
+      width: 100%;
+      height: 195px;
+      overflow: hidden;
+      background: var(--color-primary-light);
+    }
+    .dean-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+    .dean-body { padding: 15px; }
+    .dean-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 2px;
+    }
+    .dean-pos {
+      font-size: 12px;
+      color: var(--color-gold);
+      font-weight: 700;
+      margin-bottom: 9px;
+    }
+    .dean-text {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      line-height: 1.8;
+    }
+
+    /* ===== الفعاليات ===== */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .event-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      transition: var(--transition);
+    }
+    .event-card:hover {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+    }
+    .event-date-box {
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 7px 11px;
+      text-align: center;
+      min-width: 50px;
+      flex-shrink: 0;
+    }
+    .event-date-box .day {
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .event-date-box .month {
+      font-size: 11px;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+    .event-info h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.55;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .event-location { font-size: 11px; color: var(--color-text-muted); }
+
+    /* ===== مشاريع التخرج ===== */
+    .project-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      transition: var(--transition);
+    }
+    .project-card:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-md);
+    }
+    .project-spec {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-gold);
+      background: var(--color-gold-light);
+      padding: 2px 8px;
+      border-radius: 2px;
+      margin-bottom: 7px;
+      border: 1px solid rgba(201,150,12,0.20);
+    }
+    .project-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.6;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .project-meta {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-top: 9px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* ===== الخدمات ===== */
+    .services-section {
+      background: var(--color-primary);
+      padding: 32px 0;
+    }
+    .services-section .section-title { color: #fff; }
+    .services-section .section-title::before { background: var(--color-gold); }
+    .services-section .section-header { border-bottom-color: rgba(255,255,255,0.15); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+    .service-card {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.18);
+      border-radius: var(--radius-md);
+      padding: 18px 10px;
+      text-align: center;
+      color: rgba(255,255,255,0.90);
+      font-size: 13px;
+      font-weight: 600;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
+    }
+    .service-card:hover {
+      background: rgba(255,255,255,0.16);
+      border-color: var(--color-gold);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+    .service-icon { color: var(--color-gold); }
+
+    /* ===== استجابة ===== */
+    @media (max-width: 992px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .events-grid { grid-template-columns: repeat(2, 1fr); }
+      .services-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .slider-section { height: 280px; }
+      .slide-content { padding: 0 36px; }
+      .slide-content h2 { font-size: 20px; }
+      .events-grid { grid-template-columns: 1fr; }
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 576px) {
+      .slider-section { height: 220px; }
+      .slide-content { padding: 0 18px; }
+      .slide-content h2 { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- الهيدر والنافبار -->
+  <div id="site-header"></div>
+
+  <!-- السلايدر -->
+  <section class="slider-section"
+           onmouseenter="stopSliderTimer()"
+           onmouseleave="startSliderTimer()">
+    <div id="slider-container" class="slider-container"></div>
+    <button class="slider-arrow slider-arrow-next" onclick="nextSlide()" aria-label="التالي">&#10095;</button>
+    <button class="slider-arrow slider-arrow-prev" onclick="prevSlide()" aria-label="السابق">&#10094;</button>
+    <div id="slider-dots" class="slider-dots"></div>
+  </section>
+
+  <!-- الشريط السريع -->
+  <div class="quick-bar">
+    <div class="container">
+      <div class="quick-links">
+        <a href="http://www.results.bsu.edu.eg" target="_blank">نتائج الطلاب</a>
+        <a href="http://www.email.bsu.edu.eg/_BSU_Std.aspx" target="_blank">البريد الجامعي</a>
+        <a href="http://www.digitalibrary.bsu.edu.eg" target="_blank">المكتبة الرقمية</a>
+        <a href="https://www.bsu.edu.eg" target="_blank">بوابة الجامعة</a>
+        <a href="contact.html">التواصل مع الكلية</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- المحتوى الرئيسي -->
+  <main>
+
+    <!-- أخبار + كلمة رئيس القسم -->
+    <section class="section-wrap">
+      <div class="container">
+        <div class="main-grid">
+          <div>
+            <div class="section-header">
+              <h2 class="section-title">آخر الأخبار</h2>
+              <a href="news.html" class="section-more">جميع الأخبار</a>
+            </div>
+            <div id="news-list" class="news-list">
+              <div class="loading">جاري التحميل...</div>
+            </div>
+          </div>
+          <div>
+            <div class="section-header">
+              <h2 class="section-title">كلمة رئيس القسم</h2>
+            </div>
+            <div class="dean-card">
+              <div class="dean-img-wrap">
+                <img id="dean-img"
+                     src="assets/images/staff/head.jpg"
+                     alt="رئيس القسم"
+                     class="dean-img"
+                     onerror="this.style.display='none'">
+              </div>
+              <div class="dean-body">
+                <div class="dean-name" id="dean-name">أ.د. محمد أحمد عبد الله</div>
+                <div class="dean-pos">رئيس قسم التوحد</div>
+                <p class="dean-text" id="dean-text">
+                  يسعدنا أن نرحب بكم في الموقع الرسمي لكلية علوم ذوي الاحتياجات الخاصة بجامعة بني سويف،
+                  الكلية التي تسعى إلى تقديم تعليم متميز وبحث علمي رائد في خدمة هذه الفئة الكريمة من أبناء مجتمعنا.
+                </p>
+                <a href="about.html" class="btn btn-outline" style="margin-top:12px;font-size:13px;">اقرأ المزيد</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- شريط الإحصائيات -->
+    <div class="stats-bar">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-num" data-target="850">0</div>
+            <div class="stat-label">عدد الطلاب</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num" data-target="24">0</div>
+            <div class="stat-label">عضو هيئة تدريس</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num" data-target="120">0</div>
+            <div class="stat-label">بحث علمي منشور</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num" data-target="2010">0</div>
+            <div class="stat-label">سنة التأسيس</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الفعاليات القادمة -->
+    <section class="section-wrap" style="background:#fff;">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">الفعاليات القادمة</h2>
+          <a href="news.html#events" class="section-more">جميع الفعاليات</a>
+        </div>
+        <div id="events-list" class="events-grid">
+          <div class="loading">جاري التحميل...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- مشاريع التخرج -->
+    <section class="section-wrap">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">أبرز مشاريع التخرج</h2>
+          <a href="projects.html" class="section-more">جميع المشاريع</a>
+        </div>
+        <div id="projects-list" class="grid-3">
+          <div class="loading">جاري التحميل...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- الخدمات الإلكترونية -->
+    <section class="services-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">الخدمات الإلكترونية</h2>
+        </div>
+        <div class="services-grid">
+          <a href="http://www.results.bsu.edu.eg" target="_blank" class="service-card">
+            <svg class="service-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+            <span>نتائج الطلاب</span>
+          </a>
+          <a href="staff.html" class="service-card">
+            <svg class="service-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            <span>هيئة التدريس</span>
+          </a>
+          <a href="http://www.email.bsu.edu.eg/_BSU_Std.aspx" target="_blank" class="service-card">
+            <svg class="service-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span>البريد الجامعي</span>
+          </a>
+          <a href="http://www.digitalibrary.bsu.edu.eg" target="_blank" class="service-card">
+            <svg class="service-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+            </svg>
+            <span>المكتبة الرقمية</span>
+          </a>
+          <a href="projects.html" class="service-card">
+            <svg class="service-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span>مشاريع التخرج</span>
+          </a>
+          <a href="contact.html" class="service-card">
+            <svg class="service-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+            <span>اتصل بنا</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- الفوتر -->
+  <div id="site-footer"></div>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    'use strict';
+
+    const DEFAULT_SLIDES = [
+      {
+        image: 'assets/images/slider/slide1.jpg',
+        title: 'كلية علوم ذوي الاحتياجات الخاصة',
+        subtitle: 'نسعى إلى تقديم تعليم متميز وبحث علمي رائد في خدمة ذوي الاحتياجات الخاصة'
+      },
+      {
+        image: 'assets/images/slider/slide2.jpg',
+        title: 'قسم التوحد',
+        subtitle: 'رعاية وتأهيل وتعليم الأطفال ذوي اضطراب طيف التوحد بأحدث الأساليب العلمية'
+      },
+      {
+        image: 'assets/images/slider/slide3.jpg',
+        title: 'البحث العلمي والابتكار',
+        subtitle: 'أبحاث علمية متخصصة تخدم مجتمع ذوي الاحتياجات الخاصة على المستوى المحلي والدولي'
+      }
+    ];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initPage('index');
+
+      const slidesData = getLocal('slider') || DEFAULT_SLIDES;
+      initSlider(slidesData);
+
+      const [newsData, eventsData, projectsData, staffData] = await Promise.all([
+        getData('news'),
+        getData('events'),
+        getData('projects'),
+        getData('staff')
+      ]);
+
+      renderNews(newsData);
+      renderEvents(eventsData);
+      renderProjects(projectsData);
+      if (staffData && staffData.department_head) {
+        renderDean(staffData.department_head);
+      }
+      initCounters();
+    });
+
+    function renderNews(data) {
+      const el = document.getElementById('news-list');
+      if (!el) return;
+      if (!data || !data.news || !data.news.length) {
+        el.innerHTML = '<div class="empty-state"><p>لا توجد أخبار حالياً</p></div>';
+        return;
+      }
+      const items = data.news.filter(n => n.published).slice(0, 5);
+      el.innerHTML = items.map(n => `
+        <div class="news-item">
+          ${n.image
+            ? `<img src="assets/images/${n.image}" alt="${n.title}" class="news-item-img" onerror="this.style.display='none'">`
+            : `<div class="news-item-placeholder"></div>`}
+          <div class="news-item-body">
+            <span class="news-item-cat">${n.category || 'أخبار'}</span>
+            <div class="news-item-title"><a href="news.html?id=${n.id}">${n.title}</a></div>
+            <div class="news-item-date">${formatDate(n.date)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderDean(head) {
+      const nameEl = document.getElementById('dean-name');
+      const textEl = document.getElementById('dean-text');
+      const imgEl  = document.getElementById('dean-img');
+      if (nameEl && head.name)  nameEl.textContent = head.name;
+      if (textEl && head.bio)   textEl.textContent = head.bio;
+      if (imgEl  && head.image) {
+        imgEl.src = `assets/images/${head.image}`;
+        imgEl.alt = head.name;
+      }
+    }
+
+    function renderEvents(data) {
+      const el = document.getElementById('events-list');
+      if (!el) return;
+      if (!data || !data.events || !data.events.length) {
+        el.innerHTML = '<div class="empty-state"><p>لا توجد فعاليات قادمة</p></div>';
+        return;
+      }
+      const items = data.events.filter(e => e.published).slice(0, 3);
+      el.innerHTML = items.map(e => {
+        const d     = new Date(e.date_start);
+        const day   = d.getDate();
+        const month = d.toLocaleDateString('ar-EG', { month: 'short' });
+        return `
+          <div class="event-card">
+            <div class="event-date-box">
+              <div class="day">${day}</div>
+              <div class="month">${month}</div>
+            </div>
+            <div class="event-info">
+              <h4>${e.title}</h4>
+              <div class="event-location">${e.location || ''}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderProjects(data) {
+      const el = document.getElementById('projects-list');
+      if (!el) return;
+      if (!data || !data.projects || !data.projects.length) {
+        el.innerHTML = '<div class="empty-state"><p>لا توجد مشاريع حالياً</p></div>';
+        return;
+      }
+      const items = data.projects.filter(p => p.published).slice(0, 3);
+      el.innerHTML = items.map(p => `
+        <div class="project-card">
+          <span class="project-spec">${p.specialization || ''}</span>
+          <div class="project-title">${p.title}</div>
+          <div class="project-meta">
+            <span>المشرف: ${p.supervisor || ''}</span>
+            <span>الطلاب: ${(p.students || []).join(' - ')}</span>
+            <span>العام: ${p.year || ''}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function initCounters() {
+      const counters = document.querySelectorAll('.stat-num[data-target]');
+      if (!counters.length) return;
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCounter(entry.target);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      counters.forEach(el => observer.observe(el));
+    }
+
+    function animateCounter(el) {
+      const target    = parseInt(el.dataset.target, 10);
+      const steps     = 60;
+      const increment = target / steps;
+      let step        = 0;
+      const timer = setInterval(() => {
+        step++;
+        const current = Math.min(Math.round(increment * step), target);
+        el.textContent = current.toLocaleString('ar-EG');
+        if (current >= target) clearInterval(timer);
+      }, 1800 / steps);
+    }
+  </script>
+</body>
+</html>
