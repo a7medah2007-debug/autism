@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة مشاريع التخرج - لوحة التحكم</title>
+  <link rel="stylesheet" href="assets/css/admin.css">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <style>
+    .project-title-cell { font-size:13px; font-weight:700; color:var(--text); line-height:1.5; }
+    .project-meta-cell  { font-size:11px; color:var(--text-muted); margin-top:3px; }
+    .students-list      { display:flex; flex-direction:column; gap:8px; }
+    .student-row        { display:flex; gap:8px; align-items:center; }
+    .student-row input  { flex:1; }
+    .btn-remove-student {
+      width:30px; height:30px; border-radius:var(--radius-sm);
+      background:var(--danger-light); color:var(--danger); border:none;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; font-size:16px; transition:var(--transition);
+    }
+    .btn-remove-student:hover { background:var(--danger); color:#fff; }
+    .btn-add-student {
+      font-size:12px; font-weight:700; color:var(--primary); background:var(--primary-light);
+      border:1.5px dashed var(--primary); border-radius:var(--radius-sm); padding:6px 14px;
+      cursor:pointer; font-family:var(--font); width:100%; transition:var(--transition); margin-top:4px;
+    }
+    .btn-add-student:hover { background:var(--primary); color:#fff; }
+    .img-preview-box {
+      width:100%; height:150px; border:2px dashed var(--border); border-radius:var(--radius-md);
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      overflow:hidden; transition:var(--transition); background:var(--bg); position:relative;
+    }
+    .img-preview-box:hover { border-color:var(--primary); background:var(--primary-light); }
+    .img-preview-box img { width:100%; height:100%; object-fit:cover; display:none; }
+    .img-preview-box img.show { display:block; }
+    .img-preview-box .upload-hint {
+      display:flex; flex-direction:column; align-items:center; gap:8px;
+      color:var(--text-muted); font-size:12px; text-align:center;
+    }
+    .img-preview-box .upload-hint svg { opacity:0.4; }
+    .img-overlay {
+      position:absolute; inset:0; background:rgba(10,61,122,0.6);
+      display:none; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700;
+    }
+    .img-preview-box:hover .img-overlay { display:flex; }
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <div id="admin-sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div id="admin-header"></div>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div>
+          <h1>إدارة مشاريع التخرج</h1>
+          <p>إضافة وتعديل وحذف مشاريع التخرج</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          إضافة مشروع جديد
+        </button>
+      </div>
+
+      <!-- شريط البحث -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-body" style="padding:12px 16px;">
+          <div class="toolbar">
+            <div class="search-input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" class="search-input" id="search-input"
+                     placeholder="بحث بعنوان المشروع أو اسم الطالب أو المشرف..."
+                     oninput="renderTable()">
+            </div>
+            <select class="form-control" style="width:160px;" id="filter-category" onchange="renderTable()">
+              <option value="">كل التصنيفات</option>
+            </select>
+            <select class="form-control" style="width:150px;" id="filter-status-field" onchange="renderTable()">
+              <option value="">كل حالات المشروع</option>
+            </select>
+            <select class="form-control" style="width:140px;" id="filter-published" onchange="renderTable()">
+              <option value="">كل حالات النشر</option>
+              <option value="published">منشور</option>
+              <option value="hidden">مخفي</option>
+            </select>
+            <span class="badge badge-primary" id="result-count">0 مشروع</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- إحصائيات -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:10px;">
+          <div class="stat-icon stat-icon-blue" style="width:36px;height:36px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+            </svg>
+          </div>
+          <div><div class="stat-num" id="s-total" style="font-size:20px;">0</div><div class="stat-label">إجمالي المشاريع</div></div>
+        </div>
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:10px;">
+          <div class="stat-icon stat-icon-gold" style="width:36px;height:36px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div><div class="stat-num" id="s-students" style="font-size:20px;">0</div><div class="stat-label">إجمالي الطلاب</div></div>
+        </div>
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:10px;">
+          <div class="stat-icon stat-icon-green" style="width:36px;height:36px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+            </svg>
+          </div>
+          <div><div class="stat-num" id="s-categories" style="font-size:20px;">0</div><div class="stat-label">تصنيفات</div></div>
+        </div>
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:10px;">
+          <div class="stat-icon stat-icon-red" style="width:36px;height:36px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div><div class="stat-num" id="s-statuses" style="font-size:20px;">0</div><div class="stat-label">حالات المشاريع</div></div>
+        </div>
+      </div>
+
+      <!-- الجدول -->
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>عنوان المشروع</th>
+                <th>التصنيف</th>
+                <th>الحالة</th>
+                <th>الطلاب</th>
+                <th>المشرفون</th>
+                <th>النشر</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="projects-tbody">
+              <tr class="loading-row"><td colspan="8">جاري تحميل البيانات...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== مودال الإضافة / التعديل ===== -->
+<div class="modal-overlay" id="project-modal" onclick="closeModalOnOverlay(event,'project-modal')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="modal-title">إضافة مشروع جديد</h3>
+      <button class="modal-close" onclick="closeModal('project-modal')">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="f-id">
+
+      <!-- عنوان المشروع -->
+      <div class="form-group">
+        <label class="form-label">عنوان المشروع <span class="req">*</span></label>
+        <textarea class="form-control" id="f-title" rows="2"
+                  placeholder="أدخل عنوان المشروع كاملاً..."></textarea>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">التصنيف <span class="req">*</span></label>
+          <input type="text" class="form-control" id="f-category"
+                 placeholder="مثال: التوحد، الإعاقة الذهنية...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">حالة المشروع</label>
+          <input type="text" class="form-control" id="f-status"
+                 placeholder="مثال: مستمر، مكتمل...">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">المشرفون <span class="req">*</span></label>
+        <input type="text" class="form-control" id="f-supervisors"
+               placeholder="أسماء المشرفين مفصولة بفاصلة">
+      </div>
+
+      <!-- قائمة الطلاب -->
+      <div class="form-group">
+        <label class="form-label">أسماء الطلاب <span class="req">*</span></label>
+        <div class="students-list" id="students-list"></div>
+        <button class="btn-add-student" onclick="addStudentRow()" type="button">+ إضافة طالب</button>
+      </div>
+
+      <!-- وصف المشروع -->
+      <div class="form-group">
+        <label class="form-label">وصف المشروع <span class="req">*</span></label>
+        <textarea class="form-control" id="f-description" rows="4"
+                  placeholder="اكتب وصفاً تفصيلياً للمشروع وأهدافه..."></textarea>
+      </div>
+
+      <!-- صورة الغلاف -->
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">صورة غلاف المشروع</label>
+          <div class="img-preview-box" onclick="document.getElementById('img-input').click()">
+            <div class="upload-hint" id="img-hint">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              اضغط لرفع صورة الغلاف
+            </div>
+            <img id="img-preview" alt="صورة الغلاف">
+            <div class="img-overlay">تغيير الصورة</div>
+          </div>
+          <input type="file" id="img-input" accept="image/*" style="display:none;">
+          <input type="hidden" id="f-image">
+        </div>
+
+        <!-- صورة نظارة VR -->
+        <div class="form-group">
+          <label class="form-label">صورة نظارة الواقع الافتراضي (VR)</label>
+          <div class="img-preview-box" onclick="document.getElementById('vr-img-input').click()">
+            <div class="upload-hint" id="vr-img-hint">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              اضغط لرفع صورة النظارة
+            </div>
+            <img id="vr-img-preview" alt="صورة نظارة VR">
+            <div class="img-overlay">تغيير الصورة</div>
+          </div>
+          <input type="file" id="vr-img-input" accept="image/*" style="display:none;">
+          <input type="hidden" id="f-vr-device-image">
+        </div>
+      </div>
+
+      <!-- تفاصيل نظارة VR -->
+      <div class="form-group">
+        <label class="form-label">تفاصيل ومواصفات نظارة VR</label>
+        <textarea class="form-control" id="f-vr-device-details" rows="2"
+                  placeholder="نوع النظارة، مواصفاتها، طريقة استخدامها في المشروع..."></textarea>
+      </div>
+
+      <!-- حالة النشر -->
+      <div class="form-group">
+        <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>حالة النشر</span>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;">
+            <input type="checkbox" id="f-published" checked style="cursor:pointer;">
+            <span id="publish-label" style="font-size:13px;">منشور</span>
+          </label>
+        </label>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveProject()">حفظ المشروع</button>
+      <button class="btn btn-ghost" onclick="closeModal('project-modal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/imagekit-javascript/dist/imagekit.min.js"></script>
+<script src="assets/js/admin.js"></script>
+<script>
+  'use strict';
+
+  const SUPABASE_URL              = 'https://taplgfctwktiwikiyjhr.supabase.co';
+  const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcGxnZmN0d2t0aXdpa2l5amhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODE4MjQ5NiwiZXhwIjoyMDkzNzU4NDk2fQ.t0UGyub-2acXX-jlXwSGjGbX4f9kV8Fk2aSAIW3_TTo';
+
+  /* ── Supabase REST helpers ── */
+  async function _upsertProjectRow(record) {
+    const isNew    = !record.id;
+    const endpoint = isNew
+      ? `${SUPABASE_URL}/rest/v1/projects`
+      : `${SUPABASE_URL}/rest/v1/projects?id=eq.${encodeURIComponent(record.id)}`;
+    const res = await fetch(endpoint, {
+      method:  isNew ? 'POST' : 'PATCH',
+      headers: {
+        'apikey':        SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type':  'application/json',
+        'Prefer':        'return=representation'
+      },
+      body: JSON.stringify(record)
+    });
+    if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.message || `Supabase ${res.status}`); }
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows[0] : rows;
+  }
+
+  async function _patchProjectRow(id, patch) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/projects?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey':        SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type':  'application/json'
+      },
+      body: JSON.stringify(patch)
+    });
+    if (!res.ok) throw new Error(`Supabase ${res.status}`);
+  }
+
+  async function _deleteProjectRow(id) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/projects?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: {
+        'apikey':        SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+      }
+    });
+    if (!res.ok) throw new Error(`Supabase ${res.status}`);
+  }
+
+  /* ── تحويل حقول المصفوفات ── */
+  function parseArr(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    try { return JSON.parse(val); } catch (_) { return [String(val)]; }
+  }
+
+  /* ── حالة الصفحة ── */
+  let projectsData = [];
+  let _stagedImg   = null;
+  let _stagedVrImg = null;
+
+  /* ── تهيئة ── */
+  document.addEventListener('DOMContentLoaded', async () => {
+    checkAuth();
+    buildLayout('projects');
+
+    // تحميل البيانات مباشرة بصلاحية service role
+    const raw = await getData('projects');
+    projectsData = raw?.projects || [];
+
+    // تعبئة فلاتر التصنيف والحالة
+    const cats     = [...new Set(projectsData.map(p => p.category).filter(Boolean))].sort();
+    const statuses = [...new Set(projectsData.map(p => p.status).filter(Boolean))].sort();
+    const catF     = document.getElementById('filter-category');
+    const stF      = document.getElementById('filter-status-field');
+    cats.forEach(c    => catF.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`);
+    statuses.forEach(s => stF.innerHTML  += `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`);
+
+    // publish checkbox label
+    document.getElementById('f-published').addEventListener('change', function () {
+      document.getElementById('publish-label').textContent = this.checked ? 'منشور' : 'مخفي';
+    });
+
+    // رفع صورة الغلاف
+    document.getElementById('img-input').addEventListener('change', async function () {
+      const file = this.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { showToast('اختر ملف صورة صحيح', 'danger'); this.value=''; return; }
+      _stagedImg = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const pr = document.getElementById('img-preview');
+        pr.src = e.target.result;
+        pr.classList.add('show');
+        document.getElementById('img-hint').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+      this.value = '';
+    });
+
+    // رفع صورة VR
+    document.getElementById('vr-img-input').addEventListener('change', async function () {
+      const file = this.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { showToast('اختر ملف صورة صحيح', 'danger'); this.value=''; return; }
+      _stagedVrImg = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const pr = document.getElementById('vr-img-preview');
+        pr.src = e.target.result;
+        pr.classList.add('show');
+        document.getElementById('vr-img-hint').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+      this.value = '';
+    });
+
+    addStudentRow();
+    updateStats();
+    renderTable();
+  });
+
+  /* ── إحصائيات ── */
+  function updateStats() {
+    const projects   = projectsData;
+    const students   = projects.reduce((a, p) => a + parseArr(p.students_names).length, 0);
+    const cats       = [...new Set(projects.map(p => p.category).filter(Boolean))].length;
+    const statuses   = [...new Set(projects.map(p => p.status).filter(Boolean))].length;
+    document.getElementById('s-total').textContent      = projects.length;
+    document.getElementById('s-students').textContent   = students;
+    document.getElementById('s-categories').textContent = cats;
+    document.getElementById('s-statuses').textContent   = statuses;
+  }
+
+  /* ── عرض الجدول ── */
+  function renderTable() {
+    const tbody     = document.getElementById('projects-tbody');
+    const query     = document.getElementById('search-input').value.trim().toLowerCase();
+    const catF      = document.getElementById('filter-category').value;
+    const stF       = document.getElementById('filter-status-field').value;
+    const publishedF = document.getElementById('filter-published').value;
+
+    let items = [...projectsData];
+    if (query) {
+      items = items.filter(p =>
+        (p.title || '').toLowerCase().includes(query) ||
+        (p.supervisors || '').toLowerCase().includes(query) ||
+        parseArr(p.students_names).some(s => s.toLowerCase().includes(query))
+      );
+    }
+    if (catF)                      items = items.filter(p => p.category === catF);
+    if (stF)                       items = items.filter(p => p.status === stF);
+    if (publishedF === 'published') items = items.filter(p => p.published);
+    if (publishedF === 'hidden')    items = items.filter(p => !p.published);
+
+    document.getElementById('result-count').textContent = `${items.length} مشروع`;
+
+    if (!items.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">لا توجد مشاريع</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = items.map((p, i) => {
+      const students = parseArr(p.students_names);
+      return `
+        <tr>
+          <td style="color:var(--text-muted);font-size:12px;">${i + 1}</td>
+          <td style="max-width:240px;">
+            <div class="project-title-cell">${escapeHtml(p.title || '')}</div>
+            <div class="project-meta-cell">${escapeHtml((p.description || '').substring(0, 60))}${(p.description || '').length > 60 ? '…' : ''}</div>
+          </td>
+          <td><span class="badge badge-gold">${escapeHtml(p.category || '')}</span></td>
+          <td><span class="badge badge-primary">${escapeHtml(p.status || '')}</span></td>
+          <td style="font-size:12px;color:var(--text-muted);max-width:160px;">
+            ${students.map(s => `<div>${escapeHtml(s)}</div>`).join('')}
+          </td>
+          <td style="font-size:12px;">${escapeHtml(p.supervisors || '')}</td>
+          <td>
+            <span class="badge ${p.published ? 'badge-success' : 'badge-danger'}">
+              ${p.published ? 'منشور' : 'مخفي'}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-ghost btn-sm btn-icon" onclick="togglePublish('${p.id}')"
+                      title="${p.published ? 'إخفاء' : 'نشر'}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  ${p.published
+                    ? `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                       <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                       <line x1="1" y1="1" x2="23" y2="23"/>`
+                    : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                       <circle cx="12" cy="12" r="3"/>`}
+                </svg>
+              </button>
+              <button class="btn btn-ghost btn-sm btn-icon" onclick="openEditModal('${p.id}')" title="تعديل">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="btn btn-danger btn-sm btn-icon" onclick="deleteProject('${p.id}')" title="حذف">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  /* ── إدارة صفوف الطلاب ── */
+  function addStudentRow(value = '') {
+    const list = document.getElementById('students-list');
+    const row  = document.createElement('div');
+    row.className = 'student-row';
+    row.innerHTML = `
+      <input type="text" class="form-control student-input"
+             placeholder="اسم الطالب رباعياً" value="${escapeHtml(value)}">
+      <button class="btn-remove-student" onclick="removeStudentRow(this)" type="button">&#215;</button>`;
+    list.appendChild(row);
+  }
+
+  function removeStudentRow(btn) {
+    const list = document.getElementById('students-list');
+    if (list.children.length <= 1) { showToast('يجب أن يكون هناك طالب واحد على الأقل', 'warning'); return; }
+    btn.closest('.student-row').remove();
+  }
+
+  function getStudents() {
+    return Array.from(document.querySelectorAll('.student-input'))
+      .map(i => i.value.trim()).filter(v => v);
+  }
+
+  /* ── فتح مودال الإضافة ── */
+  function openAddModal() {
+    document.getElementById('modal-title').textContent = 'إضافة مشروع جديد';
+    clearForm();
+    openModal('project-modal');
+  }
+
+  /* ── فتح مودال التعديل ── */
+  function openEditModal(id) {
+    const p = projectsData.find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('modal-title').textContent    = 'تعديل المشروع';
+    document.getElementById('f-id').value                 = p.id;
+    document.getElementById('f-title').value              = p.title           || '';
+    document.getElementById('f-category').value           = p.category        || '';
+    document.getElementById('f-status').value             = p.status          || '';
+    document.getElementById('f-supervisors').value        = p.supervisors     || '';
+    document.getElementById('f-description').value        = p.description     || '';
+    document.getElementById('f-image').value              = p.image           || '';
+    document.getElementById('f-vr-device-image').value   = p.vr_device_image || '';
+    document.getElementById('f-vr-device-details').value = p.vr_device_details || '';
+    document.getElementById('f-published').checked        = p.published !== false;
+    document.getElementById('publish-label').textContent  = p.published !== false ? 'منشور' : 'مخفي';
+
+    // الطلاب
+    document.getElementById('students-list').innerHTML = '';
+    const students = parseArr(p.students_names);
+    (students.length ? students : ['']).forEach(s => addStudentRow(s));
+
+    // معاينة صورة الغلاف
+    _setImgPreview('img-preview', 'img-hint', p.image);
+    _setImgPreview('vr-img-preview', 'vr-img-hint', p.vr_device_image);
+    _stagedImg   = null;
+    _stagedVrImg = null;
+
+    openModal('project-modal');
+  }
+
+  function _setImgPreview(previewId, hintId, url) {
+    const pr   = document.getElementById(previewId);
+    const hint = document.getElementById(hintId);
+    if (url) {
+      pr.src = url; pr.classList.add('show'); hint.style.display = 'none';
+    } else {
+      pr.classList.remove('show'); hint.style.display = 'flex';
+    }
+  }
+
+  /* ── تفريغ الفورم ── */
+  function clearForm() {
+    ['f-id','f-title','f-category','f-status','f-supervisors',
+     'f-description','f-image','f-vr-device-image','f-vr-device-details'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-published').checked = true;
+    document.getElementById('publish-label').textContent = 'منشور';
+    document.getElementById('students-list').innerHTML = '';
+    addStudentRow();
+    _setImgPreview('img-preview',    'img-hint',    null);
+    _setImgPreview('vr-img-preview', 'vr-img-hint', null);
+    _stagedImg   = null;
+    _stagedVrImg = null;
+  }
+
+  /* ── حفظ المشروع ── */
+  async function saveProject() {
+    const id          = document.getElementById('f-id').value.trim();
+    const title       = document.getElementById('f-title').value.trim();
+    const category    = document.getElementById('f-category').value.trim();
+    const status      = document.getElementById('f-status').value.trim();
+    const supervisors = document.getElementById('f-supervisors').value.trim();
+    const description = document.getElementById('f-description').value.trim();
+    const published   = document.getElementById('f-published').checked;
+    const vrDetails   = document.getElementById('f-vr-device-details').value.trim();
+    const students    = getStudents();
+
+    if (!title)       { showToast('الرجاء إدخال عنوان المشروع',    'danger'); return; }
+    if (!category)    { showToast('الرجاء إدخال تصنيف المشروع',    'danger'); return; }
+    if (!supervisors) { showToast('الرجاء إدخال اسم المشرف',        'danger'); return; }
+    if (!students.length) { showToast('الرجاء إدخال اسم طالب واحد على الأقل', 'danger'); return; }
+    if (!description) { showToast('الرجاء إدخال وصف المشروع',      'danger'); return; }
+
+    // رفع صورة الغلاف إن وُجدت
+    let imageUrl = document.getElementById('f-image').value || null;
+    if (_stagedImg) {
+      showToast('جارٍ رفع صورة الغلاف…', 'success');
+      try { imageUrl = await _ikUpload(_stagedImg, '/projects'); _stagedImg = null; }
+      catch (err) { showToast('فشل رفع الصورة: ' + err.message, 'danger'); return; }
+    }
+
+    // رفع صورة VR إن وُجدت
+    let vrImageUrl = document.getElementById('f-vr-device-image').value || null;
+    if (_stagedVrImg) {
+      showToast('جارٍ رفع صورة النظارة…', 'success');
+      try { vrImageUrl = await _ikUpload(_stagedVrImg, '/projects/vr'); _stagedVrImg = null; }
+      catch (err) { showToast('فشل رفع صورة VR: ' + err.message, 'danger'); return; }
+    }
+
+    const record = {
+      ...(id ? { id } : {}),
+      title,
+      category,
+      status:          status   || null,
+      supervisors,
+      description,
+      students_names:  students,
+      image:           imageUrl  || null,
+      vr_device_image: vrImageUrl || null,
+      vr_device_details: vrDetails || null,
+      published
+    };
+
+    try {
+      const saved = await _upsertProjectRow(record);
+      if (id) {
+        const idx = projectsData.findIndex(p => p.id === id);
+        if (idx >= 0) projectsData[idx] = { ...projectsData[idx], ...saved };
+      } else {
+        projectsData.unshift(saved);
+      }
+      updateStats();
+      renderTable();
+      closeModal('project-modal');
+      showToast(id ? 'تم تحديث المشروع بنجاح' : 'تمت إضافة المشروع بنجاح');
+    } catch (err) {
+      showToast('حدث خطأ أثناء الحفظ: ' + err.message, 'danger');
+    }
+  }
+
+  /* ── تبديل حالة النشر ── */
+  async function togglePublish(id) {
+    const p = projectsData.find(x => x.id === id);
+    if (!p) return;
+    const newStatus = !p.published;
+    try {
+      await _patchProjectRow(id, { published: newStatus });
+      p.published = newStatus;
+      renderTable();
+      showToast(newStatus ? 'تم نشر المشروع' : 'تم إخفاء المشروع');
+    } catch (err) {
+      showToast('حدث خطأ: ' + err.message, 'danger');
+    }
+  }
+
+  /* ── حذف المشروع ── */
+  function deleteProject(id) {
+    const p = projectsData.find(x => x.id === id);
+    showConfirm(
+      `هل أنت متأكد من حذف "${truncate(p?.title || '', 40)}"؟`,
+      async () => {
+        try {
+          await _deleteProjectRow(id);
+          projectsData = projectsData.filter(x => x.id !== id);
+          updateStats();
+          renderTable();
+          showToast('تم حذف المشروع بنجاح', 'danger');
+        } catch (err) {
+          showToast('حدث خطأ أثناء الحذف: ' + err.message, 'danger');
+        }
+      }
+    );
+  }
+</script>
+</body>
+</html>

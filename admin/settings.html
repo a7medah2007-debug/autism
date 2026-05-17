@@ -1,0 +1,973 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الإعدادات - لوحة التحكم</title>
+  <link rel="stylesheet" href="assets/css/admin.css">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <style>
+    /* ===== تبويبات الإعدادات ===== */
+    .settings-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .settings-tab {
+      padding: 11px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: var(--transition);
+      white-space: nowrap;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+    .settings-tab:hover  { color: var(--primary); }
+    .settings-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ===== أقسام الإعدادات ===== */
+    .settings-section { display: none; }
+    .settings-section.active { display: block; }
+
+    /* ===== بطاقة الإعداد ===== */
+    .setting-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .setting-card-header {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .setting-card-header h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .setting-card-header p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .setting-card-body { padding: 20px; }
+
+    /* ===== صف الإعداد ===== */
+    .setting-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-row-label {
+      width: 200px;
+      flex-shrink: 0;
+    }
+    .setting-row-label h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .setting-row-label p {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .setting-row-control { flex: 1; }
+
+    /* ===== صورة اللوجو ===== */
+    .logo-preview-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo-preview {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      padding: 4px;
+    }
+    .logo-placeholder {
+      width: 80px;
+      height: 80px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    /* ===== شبكة الإحصائيات ===== */
+    .stats-edit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .stat-edit-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      background: var(--bg);
+    }
+    .stat-edit-item label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    /* ===== ساعات العمل ===== */
+    .hours-edit-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .hours-edit-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+    }
+    .hours-edit-day {
+      width: 80px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .hours-edit-row input[type="time"] {
+      padding: 5px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text);
+      flex: 1;
+    }
+    .hours-edit-row input[type="time"]:focus { border-color: var(--primary); outline: none; }
+    .hours-closed-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* ===== الأمان ===== */
+    .security-card {
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .security-card-header {
+      background: var(--danger-light);
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--danger);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .security-card-header h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--danger);
+    }
+
+    /* ===== النسخ الاحتياطي ===== */
+    .backup-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .backup-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      transition: var(--transition);
+    }
+    .backup-card:hover { border-color: var(--primary); background: var(--primary-light); }
+    .backup-card svg  { margin: 0 auto 10px; color: var(--primary); }
+    .backup-card h3   { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .backup-card p    { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <div id="admin-sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div id="admin-header"></div>
+    <div class="page-content">
+
+      <!-- عنوان الصفحة -->
+      <div class="page-header">
+        <div>
+          <h1>إعدادات الموقع</h1>
+          <p>تحكم في كل تفاصيل الموقع من النصوص والبيانات إلى الأمان والنسخ الاحتياطي</p>
+        </div>
+        <button class="btn btn-primary" onclick="saveAllSettings()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          حفظ كل الإعدادات
+        </button>
+      </div>
+
+      <!-- التبويبات -->
+      <div class="settings-tabs">
+        <button class="settings-tab active" onclick="switchTab('identity',this)">هوية الكلية</button>
+        <button class="settings-tab" onclick="switchTab('homepage',this)">الصفحة الرئيسية</button>
+        <button class="settings-tab" onclick="switchTab('about',this)">عن القسم</button>
+        <button class="settings-tab" onclick="switchTab('contact',this)">التواصل وساعات العمل</button>
+        <button class="settings-tab" onclick="switchTab('links',this)">الروابط السريعة</button>
+        <button class="settings-tab" onclick="switchTab('security',this)">الأمان</button>
+        <button class="settings-tab" onclick="switchTab('backup',this)">النسخ الاحتياطي</button>
+      </div>
+
+      <!-- ===== 1. هوية الكلية ===== -->
+      <div class="settings-section active" id="sec-identity">
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>البيانات الأساسية</h2><p>الاسم والوصف الرسمي للكلية</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>اسم الجامعة</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-univ-name" value="جامعة بني سويف">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>اسم الجامعة (إنجليزي)</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-univ-name-en" value="Beni-Suef University">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>اسم الكلية</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-faculty-name" value="كلية علوم ذوي الاحتياجات الخاصة">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>اسم الكلية (إنجليزي)</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-faculty-name-en" value="Faculty of Special Needs Sciences">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>اسم القسم الرئيسي</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-dept-name" value="قسم التوحد">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>وصف الكلية</h3><p>يظهر في الفوتر ونتائج البحث</p></div>
+              <div class="setting-row-control">
+                <textarea class="form-control" id="s-faculty-desc" rows="3">كلية علوم ذوي الاحتياجات الخاصة بجامعة بني سويف، تسعى إلى تقديم تعليم متميز وبحث علمي رائد في مجال الاحتياجات الخاصة.</textarea>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>سنة التأسيس</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-founded" value="2010" style="max-width:120px;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>شعار الكلية</h2><p>اللوجو الظاهر في الهيدر وجميع الصفحات</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>شعار الكلية</h3><p>PNG أو SVG شفاف مُفضل</p></div>
+              <div class="setting-row-control">
+                <div class="logo-preview-wrap">
+                  <img id="logo-preview"
+                       src="../assets/images/logo.png"
+                       class="logo-preview"
+                       alt="لوجو الكلية"
+                       onerror="this.style.display='none';document.getElementById('logo-placeholder').style.display='flex'">
+                  <div id="logo-placeholder" class="logo-placeholder" style="display:none;">لا يوجد لوجو</div>
+                  <div>
+                    <button class="btn btn-outline btn-sm" onclick="document.getElementById('logo-input').click()">تغيير الشعار</button>
+                    <div class="form-hint" style="margin-top:6px;">الحجم المثالي: 200×200 بكسل</div>
+                  </div>
+                </div>
+                <input type="file" id="logo-input" accept="image/*" style="display:none;">
+                <input type="hidden" id="s-logo">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== 2. الصفحة الرئيسية ===== -->
+      <div class="settings-section" id="sec-homepage">
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>الإحصائيات الأربع</h2><p>الأرقام التي تظهر في شريط الإحصائيات</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="stats-edit-grid">
+              <div class="stat-edit-item">
+                <label>الرقم الأول</label>
+                <input type="number" class="form-control" id="s-stat1-num" value="850">
+                <input type="text" class="form-control" id="s-stat1-label" value="عدد الطلاب" style="margin-top:8px;">
+              </div>
+              <div class="stat-edit-item">
+                <label>الرقم الثاني</label>
+                <input type="number" class="form-control" id="s-stat2-num" value="24">
+                <input type="text" class="form-control" id="s-stat2-label" value="عضو هيئة تدريس" style="margin-top:8px;">
+              </div>
+              <div class="stat-edit-item">
+                <label>الرقم الثالث</label>
+                <input type="number" class="form-control" id="s-stat3-num" value="120">
+                <input type="text" class="form-control" id="s-stat3-label" value="بحث علمي منشور" style="margin-top:8px;">
+              </div>
+              <div class="stat-edit-item">
+                <label>الرقم الرابع</label>
+                <input type="number" class="form-control" id="s-stat4-num" value="2010">
+                <input type="text" class="form-control" id="s-stat4-label" value="سنة التأسيس" style="margin-top:8px;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>كلمة رئيس القسم في الهوم بيج</h2><p>النص الظاهر في بطاقة رئيس القسم</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>نص الترحيب</h3></div>
+              <div class="setting-row-control">
+                <textarea class="form-control" id="s-dean-welcome" rows="4">يسعدنا أن نرحب بكم في الموقع الرسمي لكلية علوم ذوي الاحتياجات الخاصة بجامعة بني سويف، الكلية التي تسعى إلى تقديم تعليم متميز وبحث علمي رائد في خدمة هذه الفئة الكريمة من أبناء مجتمعنا.</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>الشريط العلوي والفوتر</h2><p>نصوص ثابتة تظهر في جميع الصفحات</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>نص حقوق النشر</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-copyright"
+                       value="جميع الحقوق محفوظة - كلية علوم ذوي الاحتياجات الخاصة - جامعة بني سويف">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>نص التطوير</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-dev-credit"
+                       value="تصميم وتطوير: وحدة تقنية المعلومات">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>نص مختصر عن الكلية في الفوتر</h3></div>
+              <div class="setting-row-control">
+                <textarea class="form-control" id="s-footer-about" rows="3">كلية علوم ذوي الاحتياجات الخاصة - جامعة بني سويف، تسعى إلى تقديم تعليم متميز وبحث علمي رائد في مجال الاحتياجات الخاصة.</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== 3. عن القسم ===== -->
+      <div class="settings-section" id="sec-about">
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>نشأة القسم</h2><p>التاريخ والنشأة الظاهران في صفحة عن القسم</p></div>
+          </div>
+          <div class="setting-card-body">
+            <textarea class="form-control" id="s-history" rows="6">أُنشئت كلية علوم ذوي الاحتياجات الخاصة بجامعة بني سويف عام 2010م، استجابةً للحاجة المتزايدة إلى تأهيل كوادر متخصصة في مجال رعاية وتعليم ذوي الاحتياجات الخاصة في محافظة بني سويف والمحافظات المجاورة.
+
+انطلقت الكلية بقسم واحد هو قسم التوحد، الذي يُعدّ من أوائل الأقسام المتخصصة في دراسة اضطراب طيف التوحد على مستوى الجامعات المصرية.</textarea>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>الرؤية والرسالة</h2></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="form-group">
+              <label class="form-label">الرؤية</label>
+              <textarea class="form-control" id="s-vision" rows="3">أن تكون كلية علوم ذوي الاحتياجات الخاصة بجامعة بني سويف مرجعاً علمياً رائداً على المستوى المحلي والإقليمي في مجال تعليم وتأهيل ذوي الاحتياجات الخاصة.</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">الرسالة</label>
+              <textarea class="form-control" id="s-mission" rows="3">تقديم برامج تعليمية وبحثية متميزة في مجال علوم ذوي الاحتياجات الخاصة، وإعداد كوادر بشرية مؤهلة قادرة على تلبية احتياجات المجتمع في مجال رعاية وتأهيل وتعليم ذوي الاحتياجات الخاصة.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>أهداف القسم</h2><p>كل هدف في سطر منفصل</p></div>
+          </div>
+          <div class="setting-card-body">
+            <textarea class="form-control" id="s-goals" rows="8">إعداد متخصصين مؤهلين في مجال تعليم وتأهيل ذوي الاحتياجات الخاصة.
+إجراء بحوث علمية تطبيقية تخدم فئة ذوي الاحتياجات الخاصة وأسرهم.
+تطوير أساليب وبرامج التدخل المبكر للأطفال ذوي اضطراب طيف التوحد.
+تقديم خدمات التدريب والتأهيل للعاملين في مجال التربية الخاصة.
+تعزيز الشراكة مع المؤسسات الحكومية والأهلية المعنية برعاية ذوي الاحتياجات الخاصة.
+نشر الوعي المجتمعي بحقوق ذوي الاحتياجات الخاصة وأساليب دمجهم في المجتمع.</textarea>
+            <div class="form-hint">اكتب كل هدف في سطر منفصل</div>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>أرقام الشريط الجانبي في صفحة عن القسم</h2></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="stats-edit-grid">
+              <div class="stat-edit-item">
+                <label>عدد الطلاب</label>
+                <input type="text" class="form-control" id="s-about-stat1" value="850+">
+              </div>
+              <div class="stat-edit-item">
+                <label>أعضاء هيئة التدريس</label>
+                <input type="text" class="form-control" id="s-about-stat2" value="24">
+              </div>
+              <div class="stat-edit-item">
+                <label>الأبحاث المنشورة</label>
+                <input type="text" class="form-control" id="s-about-stat3" value="120+">
+              </div>
+              <div class="stat-edit-item">
+                <label>سنة التأسيس</label>
+                <input type="text" class="form-control" id="s-about-stat4" value="2010">
+              </div>
+              <div class="stat-edit-item">
+                <label>مشاريع التخرج</label>
+                <input type="text" class="form-control" id="s-about-stat5" value="200+">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== 4. التواصل وساعات العمل ===== -->
+      <div class="settings-section" id="sec-contact">
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>بيانات التواصل</h2><p>تظهر في صفحة اتصل بنا والفوتر</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>العنوان</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-address" value="بني سويف، جمهورية مصر العربية">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>رقم الهاتف</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-phone" value="082-XXXXXXX" style="max-width:200px;">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>رقم الفاكس</h3></div>
+              <div class="setting-row-control">
+                <input type="text" class="form-control" id="s-fax" value="082-XXXXXXX" style="max-width:200px;">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>البريد الإلكتروني</h3></div>
+              <div class="setting-row-control">
+                <input type="email" class="form-control" id="s-email" value="info@specialneed.bsu.edu.eg" style="max-width:300px;">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>رابط خريطة Google Maps</h3><p>رابط الـ embed من Google Maps</p></div>
+              <div class="setting-row-control">
+                <textarea class="form-control" id="s-map-url" rows="3" placeholder="https://www.google.com/maps/embed?pb=..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>ساعات العمل الرسمية</h2></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="hours-edit-grid">
+              <div class="hours-edit-row">
+                <span class="hours-edit-day">الأحد</span>
+                <input type="time" id="h-sun-from" value="09:00">
+                <span style="font-size:12px;color:var(--text-muted);">إلى</span>
+                <input type="time" id="h-sun-to" value="15:00">
+                <label class="hours-closed-toggle">
+                  <input type="checkbox" id="h-sun-closed"> إجازة
+                </label>
+              </div>
+              <div class="hours-edit-row">
+                <span class="hours-edit-day">الاثنين</span>
+                <input type="time" id="h-mon-from" value="09:00">
+                <span style="font-size:12px;color:var(--text-muted);">إلى</span>
+                <input type="time" id="h-mon-to" value="15:00">
+                <label class="hours-closed-toggle">
+                  <input type="checkbox" id="h-mon-closed"> إجازة
+                </label>
+              </div>
+              <div class="hours-edit-row">
+                <span class="hours-edit-day">الثلاثاء</span>
+                <input type="time" id="h-tue-from" value="09:00">
+                <span style="font-size:12px;color:var(--text-muted);">إلى</span>
+                <input type="time" id="h-tue-to" value="15:00">
+                <label class="hours-closed-toggle">
+                  <input type="checkbox" id="h-tue-closed"> إجازة
+                </label>
+              </div>
+              <div class="hours-edit-row">
+                <span class="hours-edit-day">الأربعاء</span>
+                <input type="time" id="h-wed-from" value="09:00">
+                <span style="font-size:12px;color:var(--text-muted);">إلى</span>
+                <input type="time" id="h-wed-to" value="15:00">
+                <label class="hours-closed-toggle">
+                  <input type="checkbox" id="h-wed-closed"> إجازة
+                </label>
+              </div>
+              <div class="hours-edit-row">
+                <span class="hours-edit-day">الخميس</span>
+                <input type="time" id="h-thu-from" value="09:00">
+                <span style="font-size:12px;color:var(--text-muted);">إلى</span>
+                <input type="time" id="h-thu-to" value="15:00">
+                <label class="hours-closed-toggle">
+                  <input type="checkbox" id="h-thu-closed"> إجازة
+                </label>
+              </div>
+              <div class="hours-edit-row">
+                <span class="hours-edit-day">الجمعة</span>
+                <input type="time" id="h-fri-from" value="09:00" disabled>
+                <span style="font-size:12px;color:var(--text-muted);">إلى</span>
+                <input type="time" id="h-fri-to" value="15:00" disabled>
+                <label class="hours-closed-toggle">
+                  <input type="checkbox" id="h-fri-closed" checked onchange="toggleDay('fri',this)"> إجازة
+                </label>
+              </div>
+              <div class="hours-edit-row">
+                <span class="hours-edit-day">السبت</span>
+                <input type="time" id="h-sat-from" value="09:00" disabled>
+                <span style="font-size:12px;color:var(--text-muted);">إلى</span>
+                <input type="time" id="h-sat-to" value="15:00" disabled>
+                <label class="hours-closed-toggle">
+                  <input type="checkbox" id="h-sat-closed" checked onchange="toggleDay('sat',this)"> إجازة
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== 5. الروابط السريعة ===== -->
+      <div class="settings-section" id="sec-links">
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>روابط الخدمات الإلكترونية</h2><p>الروابط الظاهرة في قسم الخدمات في الصفحة الرئيسية والفوتر</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>رابط نتائج الطلاب</h3></div>
+              <div class="setting-row-control">
+                <input type="url" class="form-control" id="s-link-results" value="http://www.results.bsu.edu.eg">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>رابط البريد الجامعي</h3></div>
+              <div class="setting-row-control">
+                <input type="url" class="form-control" id="s-link-email" value="http://www.email.bsu.edu.eg/_BSU_Std.aspx">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>رابط المكتبة الرقمية</h3></div>
+              <div class="setting-row-control">
+                <input type="url" class="form-control" id="s-link-library" value="http://www.digitalibrary.bsu.edu.eg">
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>رابط بوابة الجامعة</h3></div>
+              <div class="setting-row-control">
+                <input type="url" class="form-control" id="s-link-univ" value="https://www.bsu.edu.eg">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 6. الأمان ===== -->
+      <div class="settings-section" id="sec-security">
+
+        <div class="security-card" style="margin-bottom:20px;">
+          <div class="security-card-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="var(--danger)">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <h2>تغيير بيانات الدخول</h2>
+          </div>
+          <div class="setting-card-body" style="padding:20px;">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">اسم المستخدم الجديد</label>
+                <input type="text" class="form-control" id="s-new-user" placeholder="اسم المستخدم الجديد" autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label class="form-label">كلمة المرور الحالية <span class="req">*</span></label>
+                <input type="password" class="form-control" id="s-current-pass" placeholder="كلمة المرور الحالية" autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label class="form-label">كلمة المرور الجديدة</label>
+                <input type="password" class="form-control" id="s-new-pass" placeholder="كلمة المرور الجديدة" autocomplete="new-password">
+              </div>
+              <div class="form-group">
+                <label class="form-label">تأكيد كلمة المرور الجديدة</label>
+                <input type="password" class="form-control" id="s-confirm-pass" placeholder="أعد إدخال كلمة المرور" autocomplete="new-password">
+              </div>
+            </div>
+            <button class="btn btn-danger" onclick="changeCredentials()">
+              تحديث بيانات الدخول
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>جلسات الدخول</h2></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>الجلسة الحالية</h3></div>
+              <div class="setting-row-control">
+                <span class="badge badge-success">نشطة</span>
+                <span style="font-size:12px;color:var(--text-muted);margin-right:10px;" id="session-time"></span>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-label"><h3>تسجيل الخروج</h3></div>
+              <div class="setting-row-control">
+                <button class="btn btn-danger btn-sm" onclick="logout()">تسجيل الخروج الآن</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== 7. النسخ الاحتياطي ===== -->
+      <div class="settings-section" id="sec-backup">
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>النسخ الاحتياطي والاستعادة</h2><p>تصدير واستيراد جميع بيانات الموقع</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="backup-actions">
+              <div class="backup-card">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <h3>تصدير النسخة الاحتياطية</h3>
+                <p>تحميل نسخة كاملة من جميع البيانات بصيغة JSON</p>
+                <button class="btn btn-primary" onclick="exportBackup()">تصدير البيانات</button>
+              </div>
+              <div class="backup-card">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <h3>استيراد نسخة احتياطية</h3>
+                <p>استعادة البيانات من ملف JSON محفوظ مسبقاً</p>
+                <button class="btn btn-outline" onclick="document.getElementById('import-input').click()">استيراد البيانات</button>
+                <input type="file" id="import-input" accept=".json" style="display:none;" onchange="importBackup(this)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <div><h2>إحصائيات التخزين</h2></div>
+          </div>
+          <div class="setting-card-body" id="storage-stats">
+            <div style="text-align:center;padding:16px;color:var(--text-muted);">جاري الحساب...</div>
+          </div>
+        </div>
+
+        <div class="setting-card" style="border-color:var(--danger);">
+          <div class="setting-card-header" style="background:var(--danger-light);">
+            <div><h2 style="color:var(--danger);">منطقة الخطر</h2><p>إجراءات لا يمكن التراجع عنها</p></div>
+          </div>
+          <div class="setting-card-body">
+            <div class="setting-row">
+              <div class="setting-row-label">
+                <h3>مسح جميع البيانات</h3>
+                <p>الموقع ثابت — عدّل ملفات data/ مباشرةً لتعديل البيانات</p>
+              </div>
+              <div class="setting-row-control">
+                <button class="btn btn-danger" onclick="clearAllData()">مسح جميع البيانات</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/imagekit-javascript/dist/imagekit.min.js"></script>
+<script src="assets/js/admin.js"></script>
+<script>
+  'use strict';
+
+  /* ── Admin Credentials (dev phase — hardcoded) ── */
+  const SUPABASE_URL              = 'https://taplgfctwktiwikiyjhr.supabase.co';
+  const SUPABASE_ANON_KEY         = 'sb_publishable_brFIWbJS5eXa2liIySOxlA_NCrDwFQD';
+  const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcGxnZmN0d2t0aXdpa2l5amhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODE4MjQ5NiwiZXhwIjoyMDkzNzU4NDk2fQ.t0UGyub-2acXX-jlXwSGjGbX4f9kV8Fk2aSAIW3_TTo';
+  const IMAGEKIT_PUBLIC_KEY       = 'public_UX9ff6muz2Vdpj6YH6hB2xxBi/Y=';
+  const IMAGEKIT_PRIVATE_KEY      = 'private_AXgco1S6rygOVwrSdEmP4Pr2VW8=';
+  const IMAGEKIT_URL_ENDPOINT     = 'https://ik.imagekit.io/autism';
+
+  let settings = {};
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    checkAuth();
+    buildLayout('settings');
+
+    // تحميل الإعدادات المحفوظة
+    settings = (await getData('site_settings')) || {};
+    loadSettingsIntoForm();
+
+    // وقت الجلسة
+    document.getElementById('session-time').textContent =
+      `منذ ${new Date().toLocaleTimeString('ar-EG')}`;
+
+    // رفع اللوجو
+    handleImageUpload(
+      document.getElementById('logo-input'),
+      null,
+      (url) => {
+        if (!url) return;
+        document.getElementById('s-logo').value = url;
+        const preview = document.getElementById('logo-preview');
+        preview.src = url;
+        preview.style.display = 'block';
+        document.getElementById('logo-placeholder').style.display = 'none';
+      },
+      'settings'
+    );
+
+    // ساعات العمل - تفعيل إيقاف اليوم
+    ['sun','mon','tue','wed','thu'].forEach(day => {
+      const cb = document.getElementById(`h-${day}-closed`);
+      if (cb) cb.addEventListener('change', function() { toggleDay(day, this); });
+    });
+
+    calcStorageStats();
+  });
+
+  /* ===== تبديل التبويب ===== */
+  function switchTab(id, btn) {
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.settings-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(`sec-${id}`).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  /* ===== تحميل الإعدادات في الفورم ===== */
+  function loadSettingsIntoForm() {
+    const fields = [
+      's-univ-name','s-univ-name-en','s-faculty-name','s-faculty-name-en',
+      's-dept-name','s-faculty-desc','s-founded','s-copyright','s-dev-credit',
+      's-footer-about','s-dean-welcome','s-history','s-vision','s-mission',
+      's-goals','s-address','s-phone','s-fax','s-email','s-map-url',
+      's-link-results','s-link-email','s-link-library','s-link-univ',
+      's-stat1-num','s-stat1-label','s-stat2-num','s-stat2-label',
+      's-stat3-num','s-stat3-label','s-stat4-num','s-stat4-label',
+      's-about-stat1','s-about-stat2','s-about-stat3','s-about-stat4','s-about-stat5'
+    ];
+
+    fields.forEach(id => {
+      const el  = document.getElementById(id);
+      const key = id.replace('s-', '').replace(/-/g, '_');
+      if (el && settings[key] !== undefined) el.value = settings[key];
+    });
+
+    if (settings.logo) {
+      const preview = document.getElementById('logo-preview');
+      preview.src = settings.logo;
+      document.getElementById('s-logo').value = settings.logo;
+    }
+  }
+
+  /* ===== حفظ كل الإعدادات ===== */
+  async function saveAllSettings() {
+    const fields = [
+      's-univ-name','s-univ-name-en','s-faculty-name','s-faculty-name-en',
+      's-dept-name','s-faculty-desc','s-founded','s-copyright','s-dev-credit',
+      's-footer-about','s-dean-welcome','s-history','s-vision','s-mission',
+      's-goals','s-address','s-phone','s-fax','s-email','s-map-url',
+      's-link-results','s-link-email','s-link-library','s-link-univ',
+      's-stat1-num','s-stat1-label','s-stat2-num','s-stat2-label',
+      's-stat3-num','s-stat3-label','s-stat4-num','s-stat4-label',
+      's-about-stat1','s-about-stat2','s-about-stat3','s-about-stat4','s-about-stat5'
+    ];
+
+    fields.forEach(id => {
+      const el  = document.getElementById(id);
+      const key = id.replace('s-', '').replace(/-/g, '_');
+      if (el) settings[key] = el.value;
+    });
+
+    const logo = document.getElementById('s-logo').value;
+    if (logo) settings.logo = logo;
+
+    // ساعات العمل
+    const days = ['sun','mon','tue','wed','thu','fri','sat'];
+    settings.hours = {};
+    days.forEach(d => {
+      const closed = document.getElementById(`h-${d}-closed`)?.checked;
+      settings.hours[d] = {
+        closed,
+        from: document.getElementById(`h-${d}-from`)?.value || '09:00',
+        to:   document.getElementById(`h-${d}-to`)?.value   || '15:00'
+      };
+    });
+
+    const ok = await saveData('site_settings', settings);
+    if (ok) showToast('تم حفظ جميع الإعدادات بنجاح');
+  }
+
+  /* ===== تبديل إجازة اليوم ===== */
+  function toggleDay(day, cb) {
+    const fromEl = document.getElementById(`h-${day}-from`);
+    const toEl   = document.getElementById(`h-${day}-to`);
+    if (fromEl) fromEl.disabled = cb.checked;
+    if (toEl)   toEl.disabled   = cb.checked;
+  }
+
+  /* ===== تغيير بيانات الدخول ===== */
+  async function changeCredentials() {
+    const currentPass = document.getElementById('s-current-pass').value;
+    const newUser     = document.getElementById('s-new-user').value.trim();
+    const newPass     = document.getElementById('s-new-pass').value;
+    const confirmPass = document.getElementById('s-confirm-pass').value;
+
+    const savedUser = settings.adminUser || ADMIN_CONFIG.user;
+    const savedPass = settings.adminPass || ADMIN_CONFIG.pass;
+
+    if (!currentPass) { showToast('الرجاء إدخال كلمة المرور الحالية', 'danger'); return; }
+    if (currentPass !== savedPass) { showToast('كلمة المرور الحالية غير صحيحة', 'danger'); return; }
+
+    if (newPass && newPass !== confirmPass) {
+      showToast('كلمة المرور الجديدة وتأكيدها غير متطابقتان', 'danger');
+      return;
+    }
+    if (newPass && newPass.length < 6) {
+      showToast('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل', 'danger');
+      return;
+    }
+
+    if (newUser) settings.adminUser = newUser;
+    if (newPass) settings.adminPass = newPass;
+
+    const ok = await saveData('site_settings', settings);
+
+    document.getElementById('s-current-pass').value = '';
+    document.getElementById('s-new-user').value     = '';
+    document.getElementById('s-new-pass').value     = '';
+    document.getElementById('s-confirm-pass').value = '';
+
+    if (ok) showToast('تم تحديث بيانات الدخول بنجاح');
+  }
+
+  /* ===== إحصائيات التخزين ===== */
+  function calcStorageStats() {
+    const el = document.getElementById('storage-stats');
+    el.innerHTML = `
+      <div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;">
+        الموقع ثابت — البيانات محفوظة في ملفات <strong>data/*.json</strong>
+      </div>`;
+  }
+
+  /* ===== تصدير النسخة الاحتياطية (ملفات JSON فقط) ===== */
+  async function exportBackup() {
+    showToast('جاري تجهيز النسخة الاحتياطية...', 'warning');
+    const backup = { exportDate: new Date().toISOString(), version: '1.0.0', data: {} };
+    const keys = ['staff','news','events','projects','slider','site_settings'];
+    for (const key of keys) {
+      backup.data[key] = await getData(key);
+    }
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `bsu-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('تم تصدير ملفات JSON بنجاح');
+  }
+
+  /* ===== استيراد النسخة الاحتياطية ===== */
+  function importBackup(input) {
+    showToast('الموقع ثابت — عدّل ملفات data/ مباشرةً', 'warning');
+    input.value = '';
+  }
+
+  /* ===== مسح جميع البيانات ===== */
+  function clearAllData() {
+    showToast('الموقع ثابت — عدّل ملفات data/ مباشرةً', 'warning');
+  }
+</script>
+</body>
+</html>

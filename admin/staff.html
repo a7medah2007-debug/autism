@@ -1,0 +1,663 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة هيئة التدريس - لوحة التحكم</title>
+  <link rel="stylesheet" href="assets/css/admin.css">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <style>
+    .rank-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .rank-tab {
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: var(--font);
+      transition: var(--transition);
+    }
+    .rank-tab:hover  { border-color: var(--primary); color: var(--primary); }
+    .rank-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .rank-count {
+      display: inline-block;
+      background: rgba(255,255,255,0.25);
+      padding: 0 6px;
+      border-radius: 10px;
+      font-size: 11px;
+      margin-right: 4px;
+    }
+    .rank-tab:not(.active) .rank-count {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    /* بطاقة عضو في الجدول */
+    .member-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .member-cell img {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      object-position: top;
+      flex-shrink: 0;
+      background: var(--primary-light);
+      border: 1px solid var(--border);
+    }
+    .member-cell-placeholder {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary), var(--primary-mid));
+    }
+    .member-name  { font-size: 13px; font-weight: 700; color: var(--text); }
+    .member-email { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    /* صورة المعاينة في المودال */
+    .img-preview-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .img-preview-wrap img {
+      width: 110px;
+      height: 130px;
+      object-fit: cover;
+      object-position: top;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--border);
+      display: block;
+    }
+    .img-preview-wrap .change-btn {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10,61,122,0.80);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      padding: 5px;
+      cursor: pointer;
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    }
+    .cv-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: var(--success-light);
+      color: var(--success);
+    }
+    .cv-badge-none {
+      background: var(--bg);
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <div id="admin-sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div id="admin-header"></div>
+    <div class="page-content">
+
+      <!-- عنوان الصفحة -->
+      <div class="page-header">
+        <div>
+          <h1>إدارة هيئة التدريس</h1>
+          <p>إضافة وتعديل وحذف أعضاء هيئة التدريس والمعيدين</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          إضافة عضو جديد
+        </button>
+      </div>
+
+      <!-- تبويبات الرتب -->
+      <div class="rank-tabs" id="rank-tabs">
+        <button class="rank-tab active" onclick="switchRank('all',this)">
+          الكل <span class="rank-count" id="cnt-all">0</span>
+        </button>
+        <button class="rank-tab" onclick="switchRank('head',this)">
+          رئيس القسم <span class="rank-count" id="cnt-head">1</span>
+        </button>
+        <button class="rank-tab" onclick="switchRank('professors',this)">
+          الأساتذة <span class="rank-count" id="cnt-prof">0</span>
+        </button>
+        <button class="rank-tab" onclick="switchRank('associate_professors',this)">
+          الأساتذة المساعدون <span class="rank-count" id="cnt-assoc">0</span>
+        </button>
+        <button class="rank-tab" onclick="switchRank('lecturers',this)">
+          المدرسون <span class="rank-count" id="cnt-lect">0</span>
+        </button>
+        <button class="rank-tab" onclick="switchRank('assistants',this)">
+          المعيدون <span class="rank-count" id="cnt-asst">0</span>
+        </button>
+      </div>
+
+      <!-- شريط البحث -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-body" style="padding:12px 16px;">
+          <div class="toolbar">
+            <div class="search-input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" class="search-input" id="search-input"
+                     placeholder="بحث بالاسم أو التخصص أو البريد..."
+                     oninput="filterTable()">
+            </div>
+            <select class="form-control" style="width:180px;" id="filter-rank" onchange="filterTable()">
+              <option value="">كل الرتب</option>
+              <option value="رئيس القسم">رئيس القسم</option>
+              <option value="أستاذ">أستاذ</option>
+              <option value="أستاذ مساعد">أستاذ مساعد</option>
+              <option value="مدرس">مدرس</option>
+              <option value="معيد">معيد</option>
+            </select>
+            <span class="badge badge-primary" id="result-count">0 عضو</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- الجدول -->
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>العضو</th>
+                <th>اللقب العلمي</th>
+                <th>الرتبة</th>
+                <th>التخصص</th>
+                <th>السيرة الذاتية</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="staff-tbody">
+              <tr class="loading-row">
+                <td colspan="8">جاري تحميل البيانات...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== مودال الإضافة / التعديل ===== -->
+<div class="modal-overlay" id="staff-modal" onclick="closeModalOnOverlay(event,'staff-modal')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="modal-title">إضافة عضو جديد</h3>
+      <button class="modal-close" onclick="closeModal('staff-modal')">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="f-id">
+      <input type="hidden" id="f-group">
+
+      <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;">
+        <!-- صورة العضو -->
+        <div>
+          <div class="form-label">صورة العضو</div>
+          <div class="img-preview-wrap" id="img-wrap">
+            <img id="img-preview" src="" alt="صورة العضو"
+                 style="display:none;">
+            <div id="img-placeholder"
+                 style="width:110px;height:130px;background:var(--primary-light);
+                        border:2px dashed var(--border);border-radius:var(--radius-sm);
+                        display:flex;align-items:center;justify-content:center;
+                        cursor:pointer;font-size:12px;color:var(--text-muted);text-align:center;
+                        flex-direction:column;gap:6px;"
+                 onclick="document.getElementById('img-input').click()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              اضغط لرفع صورة
+            </div>
+            <div class="change-btn" id="change-img-btn" style="display:none;"
+                 onclick="document.getElementById('img-input').click()">
+              تغيير الصورة
+            </div>
+          </div>
+          <input type="file" id="img-input" accept="image/*" style="display:none;">
+          <div class="form-hint" style="margin-top:6px;max-width:110px;">JPG أو PNG بحد أقصى 5MB</div>
+        </div>
+
+        <!-- البيانات الأساسية -->
+        <div style="flex:1;">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">الاسم الرباعي <span class="req">*</span></label>
+              <input type="text" class="form-control" id="f-name" placeholder="أ.د. محمد أحمد عبد الله محمد">
+            </div>
+            <div class="form-group">
+              <label class="form-label">اللقب العلمي <span class="req">*</span></label>
+              <select class="form-control" id="f-title">
+                <option value="أستاذ دكتور">أستاذ دكتور</option>
+                <option value="دكتور">دكتور</option>
+                <option value="معيد">معيد</option>
+                <option value="معيدة">معيدة</option>
+                <option value="مدرس مساعد">مدرس مساعد</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">الرتبة الوظيفية <span class="req">*</span></label>
+              <select class="form-control" id="f-position">
+                <option value="رئيس القسم">رئيس القسم</option>
+                <option value="أستاذ">أستاذ</option>
+                <option value="أستاذ مساعد">أستاذ مساعد</option>
+                <option value="مدرس">مدرس</option>
+                <option value="معيد">معيد</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">المجموعة <span class="req">*</span></label>
+              <select class="form-control" id="f-group-select" onchange="syncGroup()">
+                <option value="professors">الأساتذة</option>
+                <option value="associate_professors">الأساتذة المساعدون</option>
+                <option value="lecturers">المدرسون</option>
+                <option value="assistants">المعيدون</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">التخصص الدقيق <span class="req">*</span></label>
+            <input type="text" class="form-control" id="f-spec" placeholder="مثال: التوحد واضطرابات التواصل">
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">البريد الإلكتروني</label>
+              <input type="email" class="form-control" id="f-email" placeholder="name@specialneed.bsu.edu.eg">
+            </div>
+            <div class="form-group">
+              <label class="form-label">رقم الهاتف</label>
+              <input type="tel" class="form-control" id="f-phone" placeholder="01XXXXXXXXX">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- النبذة -->
+      <div class="form-group">
+        <label class="form-label">النبذة الشخصية</label>
+        <textarea class="form-control" id="f-bio" rows="3"
+                  placeholder="نبذة مختصرة عن العضو وخبراته وأبحاثه..."></textarea>
+      </div>
+
+      <!-- السيرة الذاتية -->
+      <div class="form-group">
+        <label class="form-label">السيرة الذاتية (PDF)</label>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cv-input').click()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            رفع ملف PDF
+          </button>
+          <span id="cv-name" style="font-size:12px;color:var(--text-muted);">لم يتم رفع ملف</span>
+          <input type="file" id="cv-input" accept="application/pdf" style="display:none;">
+          <input type="hidden" id="f-cv">
+        </div>
+        <div class="form-hint">حجم الملف لا يتجاوز 10 ميجابايت</div>
+      </div>
+
+      <!-- صورة مخزنة -->
+      <input type="hidden" id="f-image">
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveMember()">حفظ</button>
+      <button class="btn btn-ghost" onclick="closeModal('staff-modal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/imagekit-javascript/dist/imagekit.min.js"></script>
+<script src="assets/js/admin.js"></script>
+<script>
+  'use strict';
+
+  var SUPABASE_URL              = 'https://taplgfctwktiwikiyjhr.supabase.co';
+  var SUPABASE_ANON_KEY         = 'sb_publishable_brFIWbJS5eXa2liIySOxlA_NCrDwFQD';
+  var SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcGxnZmN0d2t0aXdpa2l5amhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODE4MjQ5NiwiZXhwIjoyMDkzNzU4NDk2fQ.t0UGyub-2acXX-jlXwSGjGbX4f9kV8Fk2aSAIW3_TTo';
+  var IMAGEKIT_PUBLIC_KEY       = 'public_UX9ff6muz2Vdpj6YH6hB2xxBi/Y=';
+  var IMAGEKIT_PRIVATE_KEY      = 'private_AXgco1S6rygOVwrSdEmP4Pr2VW8=';
+  var IMAGEKIT_URL_ENDPOINT     = 'https://ik.imagekit.io/autism';
+
+  var GROUP_TO_ROLE = {
+    head:                 'head',
+    professors:           'professor',
+    associate_professors: 'associate_professor',
+    lecturers:            'lecturer',
+    assistants:           'assistant'
+  };
+  var ROLE_TO_GROUP = {};
+  Object.keys(GROUP_TO_ROLE).forEach(function (g) { ROLE_TO_GROUP[GROUP_TO_ROLE[g]] = g; });
+
+  var currentRank   = 'all';
+  var currentEditId = null;
+  var allMembers    = [];
+
+  /* ─────────────────────────────────────────────
+     Bootstrap
+  ───────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', async function () {
+    buildLayout('staff');
+    await loadStaff();
+
+    handleImageUpload(
+      document.getElementById('img-input'),
+      document.getElementById('img-preview'),
+      function (url) {
+        if (!url || url.startsWith('data:')) return;
+        document.getElementById('f-image').value = url;
+        document.getElementById('img-preview').style.display = 'block';
+        document.getElementById('img-placeholder').style.display = 'none';
+        document.getElementById('change-img-btn').style.display = 'block';
+      }
+    );
+
+    handleFileUpload(
+      document.getElementById('cv-input'),
+      function (url, name) {
+        if (!url) return;
+        document.getElementById('f-cv').value = url;
+        document.getElementById('cv-name').textContent = name;
+        document.getElementById('cv-name').style.color = 'var(--success)';
+      }
+    );
+
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'add') openAddModal();
+  });
+
+  /* ─────────────────────────────────────────────
+     Load staff from Supabase
+  ───────────────────────────────────────────── */
+  async function loadStaff() {
+    document.getElementById('staff-tbody').innerHTML =
+      '<tr class="loading-row"><td colspan="8">جاري تحميل البيانات...</td></tr>';
+    try {
+      var db  = await _initSbAdmin();
+      var res = await db.from('staff').select('*')
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+      if (res.error) throw res.error;
+      allMembers = (res.data || []).map(function (m) {
+        return Object.assign({}, m, { _group: ROLE_TO_GROUP[m.role] || 'professors' });
+      });
+    } catch (err) {
+      console.error('loadStaff error:', err);
+      allMembers = [];
+      showToast('حدث خطأ أثناء تحميل البيانات: ' + (err.message || err), 'danger');
+    }
+    updateCounts();
+    renderTable();
+  }
+
+  /* ─────────────────────────────────────────────
+     Counters & filter tabs
+  ───────────────────────────────────────────── */
+  function updateCounts() {
+    function byGroup(g) { return allMembers.filter(function (m) { return m._group === g; }).length; }
+    document.getElementById('cnt-all').textContent   = allMembers.length;
+    document.getElementById('cnt-head').textContent  = byGroup('head');
+    document.getElementById('cnt-prof').textContent  = byGroup('professors');
+    document.getElementById('cnt-assoc').textContent = byGroup('associate_professors');
+    document.getElementById('cnt-lect').textContent  = byGroup('lecturers');
+    document.getElementById('cnt-asst').textContent  = byGroup('assistants');
+  }
+
+  function switchRank(rank, btn) {
+    currentRank = rank;
+    document.querySelectorAll('.rank-tab').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    renderTable();
+  }
+
+  function filterTable() { renderTable(); }
+
+  /* ─────────────────────────────────────────────
+     Render table rows
+  ───────────────────────────────────────────── */
+  function renderTable() {
+    var tbody      = document.getElementById('staff-tbody');
+    var query      = document.getElementById('search-input').value.trim().toLowerCase();
+    var rankFilter = document.getElementById('filter-rank').value;
+
+    var members = allMembers;
+    if (currentRank !== 'all') members = members.filter(function (m) { return m._group === currentRank; });
+    if (query) members = members.filter(function (m) {
+      return (m.name           || '').toLowerCase().includes(query) ||
+             (m.specialization || '').toLowerCase().includes(query) ||
+             (m.email          || '').toLowerCase().includes(query);
+    });
+    if (rankFilter) members = members.filter(function (m) { return m.position === rankFilter; });
+
+    document.getElementById('result-count').textContent = members.length + ' عضو';
+
+    if (!members.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">لا توجد نتائج</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = members.map(function (m, i) {
+      var imgCell = m.image
+        ? '<img src="' + _resolveImg(m.image) + '" alt="' + escapeHtml(m.name) + '" onerror="this.style.display=\'none\'">'
+        : '<div class="member-cell-placeholder"></div>';
+
+      var cvCell = m.cv_url
+        ? '<a href="' + escapeHtml(m.cv_url) + '" target="_blank" class="cv-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>PDF</a>'
+        : '<span class="cv-badge cv-badge-none">لا يوجد</span>';
+
+      var statusBadge = m._group === 'head'
+        ? '<span class="badge badge-gold">رئيس القسم</span>'
+        : '<span class="badge badge-success">نشط</span>';
+
+      return '<tr>' +
+        '<td style="color:var(--text-muted);font-size:12px;">' + (i + 1) + '</td>' +
+        '<td><div class="member-cell">' + imgCell +
+          '<div><div class="member-name">' + escapeHtml(m.name || '') + '</div>' +
+          '<div class="member-email">' + escapeHtml(m.email || '') + '</div></div></div></td>' +
+        '<td><span class="badge badge-primary">' + escapeHtml(m.title || '') + '</span></td>' +
+        '<td>' + escapeHtml(m.position || '') + '</td>' +
+        '<td style="font-size:12px;color:var(--text-muted);">' + escapeHtml(m.specialization || '') + '</td>' +
+        '<td>' + cvCell + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td><div style="display:flex;gap:6px;">' +
+          '<button class="btn btn-ghost btn-sm btn-icon" onclick="openEditModal(\'' + m.id + '\')" title="تعديل">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+              '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>' +
+              '<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>' +
+            '</svg></button>' +
+          '<button class="btn btn-danger btn-sm btn-icon" onclick="deleteMember(\'' + m.id + '\')" title="حذف">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+              '<polyline points="3 6 5 6 21 6"/>' +
+              '<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>' +
+              '<path d="M10 11v6M14 11v6"/>' +
+              '<path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>' +
+            '</svg></button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  /* ─────────────────────────────────────────────
+     Form helpers
+  ───────────────────────────────────────────── */
+  function syncGroup() {
+    document.getElementById('f-group').value = document.getElementById('f-group-select').value;
+  }
+
+  function clearForm() {
+    ['f-group', 'f-name', 'f-spec', 'f-email', 'f-phone', 'f-bio', 'f-cv', 'f-image'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('f-title').value          = 'أستاذ دكتور';
+    document.getElementById('f-position').value       = 'أستاذ';
+    document.getElementById('f-group-select').value   = 'professors';
+    syncGroup();
+    var preview = document.getElementById('img-preview');
+    preview.src = '';
+    preview.style.display = 'none';
+    document.getElementById('img-placeholder').style.display = 'block';
+    document.getElementById('change-img-btn').style.display  = 'none';
+    document.getElementById('cv-name').textContent = 'لم يتم رفع ملف';
+    document.getElementById('cv-name').style.color = '';
+  }
+
+  /* ─────────────────────────────────────────────
+     Open Add modal
+  ───────────────────────────────────────────── */
+  function openAddModal() {
+    currentEditId = null;
+    document.getElementById('modal-title').textContent = 'إضافة عضو جديد';
+    clearForm();
+    openModal('staff-modal');
+  }
+
+  /* ─────────────────────────────────────────────
+     Open Edit modal — stores real DB UUID in currentEditId
+  ───────────────────────────────────────────── */
+  function openEditModal(id) {
+    var m = allMembers.find(function (x) { return x.id === id; });
+    if (!m) return;
+
+    currentEditId = m.id;
+    document.getElementById('modal-title').textContent = 'تعديل بيانات العضو';
+    clearForm();
+
+    document.getElementById('f-name').value  = m.name             || '';
+    document.getElementById('f-spec').value  = m.specialization   || '';
+    document.getElementById('f-email').value = m.email            || '';
+    document.getElementById('f-phone').value = m.phone            || '';
+    document.getElementById('f-bio').value   = m.bio              || '';
+    document.getElementById('f-cv').value    = m.cv_url           || '';
+    document.getElementById('f-image').value = m.image            || '';
+
+    var titleEl = document.getElementById('f-title');
+    if (Array.from(titleEl.options).some(function (o) { return o.value === m.title; })) titleEl.value = m.title;
+
+    var posEl = document.getElementById('f-position');
+    if (Array.from(posEl.options).some(function (o) { return o.value === m.position; })) posEl.value = m.position;
+
+    var grpEl = document.getElementById('f-group-select');
+    var grp   = m._group === 'head' ? 'professors' : (m._group || 'professors');
+    if (Array.from(grpEl.options).some(function (o) { return o.value === grp; })) grpEl.value = grp;
+    syncGroup();
+    if (m._group === 'head') document.getElementById('f-group').value = 'head';
+
+    if (m.cv_url) {
+      document.getElementById('cv-name').textContent = 'ملف محفوظ';
+      document.getElementById('cv-name').style.color = 'var(--success)';
+    }
+
+    if (m.image) {
+      var preview = document.getElementById('img-preview');
+      preview.src = _resolveImg(m.image);
+      preview.style.display = 'block';
+      document.getElementById('img-placeholder').style.display = 'none';
+      document.getElementById('change-img-btn').style.display  = 'block';
+    }
+
+    openModal('staff-modal');
+  }
+
+  /* ─────────────────────────────────────────────
+     SAVE — insert if new, update if editing
+  ───────────────────────────────────────────── */
+  async function saveMember() {
+    var name = document.getElementById('f-name').value.trim();
+    var spec = document.getElementById('f-spec').value.trim();
+    if (!name) { showToast('الرجاء إدخال اسم العضو', 'danger'); return; }
+    if (!spec) { showToast('الرجاء إدخال التخصص',    'danger'); return; }
+
+    var group = document.getElementById('f-group').value || document.getElementById('f-group-select').value;
+    var role  = GROUP_TO_ROLE[group] || 'professor';
+
+    var payload = {
+      name:           name,
+      title:          document.getElementById('f-title').value,
+      position:       document.getElementById('f-position').value,
+      role:           role,
+      specialization: spec,
+      email:          document.getElementById('f-email').value.trim() || null,
+      phone:          document.getElementById('f-phone').value.trim() || null,
+      bio:            document.getElementById('f-bio').value.trim()   || null,
+      cv_url:         document.getElementById('f-cv').value.trim()    || null,
+      image:          document.getElementById('f-image').value.trim() || null,
+      published:      true
+    };
+
+    try {
+      var db  = await _initSbAdmin();
+      var res;
+      if (currentEditId) {
+        res = await db.from('staff').update(payload).eq('id', currentEditId);
+      } else {
+        res = await db.from('staff').insert(payload);
+      }
+      if (res.error) throw res.error;
+
+      showToast(currentEditId ? 'تم تحديث بيانات العضو بنجاح' : 'تم إضافة العضو بنجاح', 'success');
+      currentEditId = null;
+      closeModal('staff-modal');
+      await loadStaff();
+    } catch (err) {
+      console.error('saveMember error:', err);
+      showToast('حدث خطأ أثناء الحفظ: ' + (err.message || err), 'danger');
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+     DELETE — removes only the targeted row by id
+  ───────────────────────────────────────────── */
+  function deleteMember(id) {
+    var m = allMembers.find(function (x) { return x.id === id; });
+    showConfirm(
+      'هل أنت متأكد من حذف "' + escapeHtml(m ? m.name : 'هذا العضو') + '"؟ لا يمكن التراجع عن هذا الإجراء.',
+      async function () {
+        try {
+          var db  = await _initSbAdmin();
+          var res = await db.from('staff').delete().eq('id', id);
+          if (res.error) throw res.error;
+          showToast('تم حذف العضو بنجاح', 'success');
+          await loadStaff();
+        } catch (err) {
+          console.error('deleteMember error:', err);
+          showToast('حدث خطأ أثناء الحذف: ' + (err.message || err), 'danger');
+        }
+      }
+    );
+  }
+</script>
+</body>
+</html>
