@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الأخبار والفعاليات - قسم اضطراب التوحد - كلية علوم ذوي الاحتياجات الخاصة - جامعة بني سويف</title>
+  <meta name="description" content="أخبار وفعاليات قسم اضطراب التوحد - كلية علوم ذوي الاحتياجات الخاصة - جامعة بني سويف">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <style>
+
+    .news-page { padding: 36px 0; }
+
+    /* ===== تبويبات ===== */
+    .tabs-bar {
+      display: flex;
+      border-bottom: 2px solid var(--color-border);
+      margin-bottom: 28px;
+      background: #fff;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-main);
+      transition: var(--transition);
+      border-bottom: 3px solid transparent;
+      position: relative;
+    }
+    .tab-btn:hover { color: var(--color-primary); background: var(--color-primary-light); }
+    .tab-btn.active {
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+      border-bottom-color: var(--color-primary);
+    }
+    .tab-count {
+      display: inline-block;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 20px;
+      margin-right: 6px;
+    }
+    .tab-btn.active .tab-count { background: var(--color-gold); }
+
+    /* ===== شريط الفلترة ===== */
+    .filter-bar {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-label { font-size: 13px; font-weight: 700; color: var(--color-text); white-space: nowrap; }
+    .filter-btn {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 13px;
+      border-radius: 20px;
+      border: 1.5px solid var(--color-border);
+      background: transparent;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: var(--font-main);
+    }
+    .filter-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .filter-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+
+    /* ===== شبكة الأخبار ===== */
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .news-card {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .news-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary);
+      transform: translateY(-2px);
+    }
+    .news-card-img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      background: var(--color-primary-light);
+    }
+    .news-card-img-placeholder {
+      width: 100%;
+      height: 170px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-mid));
+    }
+    .news-card-body {
+      padding: 15px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .news-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .news-cat-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--color-primary);
+      padding: 2px 8px;
+      border-radius: 2px;
+    }
+    .news-card-date { font-size: 11px; color: var(--color-text-muted); }
+    .news-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.6;
+      margin-bottom: 8px;
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .news-card-summary {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      line-height: 1.7;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .news-card-link {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-primary);
+      border-bottom: 1.5px solid transparent;
+      align-self: flex-start;
+      transition: var(--transition);
+    }
+    .news-card-link:hover { border-bottom-color: var(--color-primary); }
+
+    /* ===== شبكة الفعاليات ===== */
+    .events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .event-row {
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .event-row:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary);
+    }
+    .event-row-date {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 16px 20px;
+      text-align: center;
+      min-width: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .event-row-date .day { font-size: 28px; font-weight: 700; line-height: 1; }
+    .event-row-date .month { font-size: 12px; opacity: 0.85; margin-top: 3px; }
+    .event-row-date .year { font-size: 11px; opacity: 0.70; margin-top: 1px; }
+    .event-row-body { padding: 16px 20px; flex: 1; }
+    .event-row-cat {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--color-gold);
+      padding: 2px 8px;
+      border-radius: 2px;
+      margin-bottom: 7px;
+    }
+    .event-row-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+    .event-row-meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .event-row-meta span {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .event-row-summary {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      line-height: 1.7;
+      margin-top: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ===== مودال الخبر ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 2000;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 30px 20px;
+      overflow-y: auto;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 680px;
+      box-shadow: var(--shadow-lg);
+      margin: auto;
+    }
+    .modal-header {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+    .modal-header h3 { font-size: 15px; font-weight: 700; line-height: 1.5; flex: 1; }
+    .modal-close {
+      background: none; border: none; color: #fff;
+      font-size: 22px; cursor: pointer; opacity: 0.8;
+      transition: var(--transition); flex-shrink: 0;
+    }
+    .modal-close:hover { opacity: 1; }
+    .modal-img {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      background: var(--color-primary-light);
+    }
+    .modal-img-placeholder {
+      width: 100%;
+      height: 180px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-mid));
+    }
+    .modal-body { padding: 24px; }
+    .modal-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .modal-cat {
+      font-size: 11px; font-weight: 700; color: #fff;
+      background: var(--color-primary); padding: 3px 10px; border-radius: 2px;
+    }
+    .modal-date { font-size: 12px; color: var(--color-text-muted); }
+    .modal-content {
+      font-size: 14px;
+      color: var(--color-text);
+      line-height: 2;
+    }
+    .modal-footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      justify-content: flex-end;
+    }
+    .btn-close-modal {
+      font-size: 13px; font-weight: 600; padding: 7px 18px;
+      border-radius: var(--radius-sm); border: 1.5px solid var(--color-primary);
+      color: var(--color-primary); background: transparent;
+      cursor: pointer; font-family: var(--font-main); transition: var(--transition);
+    }
+    .btn-close-modal:hover { background: var(--color-primary); color: #fff; }
+
+    /* ===== استجابة ===== */
+    @media (max-width: 992px) { .news-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) {
+      .news-grid { grid-template-columns: 1fr; }
+      .event-row { flex-direction: column; }
+      .event-row-date { flex-direction: row; gap: 8px; padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- الهيدر -->
+  <div id="site-header"></div>
+
+  <!-- عنوان الصفحة -->
+  <div class="page-hero">
+    <div class="container">
+      <h1>الأخبار والفعاليات</h1>
+      <div class="breadcrumb">
+        <a href="index.html">الرئيسية</a>
+        <span class="sep">&#8249;</span>
+        <span>الأخبار والفعاليات</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- المحتوى -->
+  <div class="container">
+    <div class="news-page">
+
+      <!-- التبويبات -->
+      <div class="tabs-bar">
+        <button class="tab-btn active" id="tab-news" onclick="switchTab('news')">
+          الأخبار <span class="tab-count" id="news-count">0</span>
+        </button>
+        <button class="tab-btn" id="tab-events" onclick="switchTab('events')">
+          الفعاليات <span class="tab-count" id="events-count">0</span>
+        </button>
+      </div>
+
+      <!-- قسم الأخبار -->
+      <div id="news-section">
+        <div class="filter-bar">
+          <span class="filter-label">التصنيف:</span>
+          <div id="news-cat-filters"></div>
+        </div>
+        <div class="news-grid" id="news-grid">
+          <div class="loading">جاري التحميل...</div>
+        </div>
+      </div>
+
+      <!-- قسم الفعاليات -->
+      <div id="events-section" style="display:none;">
+        <div class="filter-bar">
+          <span class="filter-label">التصنيف:</span>
+          <div id="events-cat-filters"></div>
+        </div>
+        <div class="events-list" id="events-list">
+          <div class="loading">جاري التحميل...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- مودال -->
+  <div class="modal-overlay" id="item-modal" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title"></h3>
+        <button class="modal-close" onclick="closeModalDirect()">&#215;</button>
+      </div>
+      <div id="modal-img-wrap"></div>
+      <div class="modal-body">
+        <div class="modal-meta">
+          <span class="modal-cat"  id="modal-cat"></span>
+          <span class="modal-date" id="modal-date"></span>
+        </div>
+        <div class="modal-content" id="modal-content"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-close-modal" onclick="closeModalDirect()">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- الفوتر -->
+  <div id="site-footer"></div>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    'use strict';
+
+    let allNews      = [];
+    let allEvents    = [];
+    let activeNewsCat  = 'all';
+    let activeEventCat = 'all';
+    let currentTab   = 'news';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initPage('news');
+
+      // فحص hash في الـ URL للتبويب
+      if (window.location.hash === '#events') switchTab('events');
+
+      const [newsData, eventsData] = await Promise.all([
+        getData('news'),
+        getData('events')
+      ]);
+
+      if (newsData && newsData.news) {
+        allNews = newsData.news.filter(n => n.published);
+        document.getElementById('news-count').textContent = allNews.length;
+        buildNewsCatFilters(newsData.categories || []);
+        renderNews();
+      }
+
+      if (eventsData && eventsData.events) {
+        allEvents = eventsData.events.filter(e => e.published);
+        document.getElementById('events-count').textContent = allEvents.length;
+        buildEventsCatFilters(eventsData.categories || []);
+        renderEvents();
+      }
+    });
+
+    /* ===== تبديل التبويب ===== */
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('news-section').style.display   = tab === 'news'   ? '' : 'none';
+      document.getElementById('events-section').style.display = tab === 'events' ? '' : 'none';
+      document.getElementById('tab-news').classList.toggle('active',   tab === 'news');
+      document.getElementById('tab-events').classList.toggle('active', tab === 'events');
+    }
+
+    /* ===== فلاتر الأخبار ===== */
+    function buildNewsCatFilters(cats) {
+      const el = document.getElementById('news-cat-filters');
+      el.innerHTML = `<button class="filter-btn active" onclick="filterNewsCat('all',this)">الكل</button>` +
+        cats.map(c => `<button class="filter-btn" onclick="filterNewsCat('${c}',this)">${c}</button>`).join('');
+    }
+
+    function filterNewsCat(val, btn) {
+      activeNewsCat = val;
+      document.querySelectorAll('#news-cat-filters .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderNews();
+    }
+
+    /* ===== فلاتر الفعاليات ===== */
+    function buildEventsCatFilters(cats) {
+      const el = document.getElementById('events-cat-filters');
+      el.innerHTML = `<button class="filter-btn active" onclick="filterEventsCat('all',this)">الكل</button>` +
+        cats.map(c => `<button class="filter-btn" onclick="filterEventsCat('${c}',this)">${c}</button>`).join('');
+    }
+
+    function filterEventsCat(val, btn) {
+      activeEventCat = val;
+      document.querySelectorAll('#events-cat-filters .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderEvents();
+    }
+
+    /* ===== عرض الأخبار ===== */
+    function renderNews() {
+      const grid = document.getElementById('news-grid');
+      let items = activeNewsCat === 'all' ? allNews : allNews.filter(n => n.category === activeNewsCat);
+
+      if (!items.length) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>لا توجد أخبار بهذا التصنيف</p></div>';
+        return;
+      }
+
+      grid.innerHTML = items.map(n => `
+        <div class="news-card" onclick="openModal('news','${n.id}')">
+          ${n.image
+            ? `<img src="${ikUrl(resolveImg(n.image), 'w-600,h-380,c-at_max,q-80,f-auto')}" alt="${n.title}" class="news-card-img" onerror="this.style.display='none'">`
+            : `<div class="news-card-img-placeholder"></div>`}
+          <div class="news-card-body">
+            <div class="news-card-meta">
+              <span class="news-cat-badge">${n.category || 'أخبار'}</span>
+              <span class="news-card-date">${formatDate(n.date)}</span>
+            </div>
+            <div class="news-card-title">${n.title}</div>
+            <div class="news-card-summary">${n.summary || ''}</div>
+            <span class="news-card-link">اقرأ المزيد</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ===== عرض الفعاليات ===== */
+    function renderEvents() {
+      const list = document.getElementById('events-list');
+      let items = activeEventCat === 'all' ? allEvents : allEvents.filter(e => e.category === activeEventCat);
+
+      if (!items.length) {
+        list.innerHTML = '<div class="empty-state"><p>لا توجد فعاليات بهذا التصنيف</p></div>';
+        return;
+      }
+
+      list.innerHTML = items.map(e => {
+        const d     = new Date(e.date_start);
+        const day   = d.getDate();
+        const month = d.toLocaleDateString('ar-EG', { month: 'short' });
+        const year  = d.getFullYear();
+        return `
+          <div class="event-row" onclick="openModal('event','${e.id}')">
+            <div class="event-row-date">
+              <div class="day">${day}</div>
+              <div class="month">${month}</div>
+              <div class="year">${year}</div>
+            </div>
+            <div class="event-row-body">
+              <span class="event-row-cat">${e.category || 'فعالية'}</span>
+              <div class="event-row-title">${e.title}</div>
+              <div class="event-row-meta">
+                <span>&#9201; ${e.time || ''}</span>
+                <span>&#128205; ${e.location || ''}</span>
+                ${e.date_end && e.date_end !== e.date_start
+                  ? `<span>حتى: ${formatDate(e.date_end)}</span>` : ''}
+              </div>
+              <div class="event-row-summary">${e.summary || ''}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    /* ===== مودال ===== */
+    function openModal(type, id) {
+      const item = type === 'news'
+        ? allNews.find(n => n.id === id)
+        : allEvents.find(e => e.id === id);
+      if (!item) return;
+
+      document.getElementById('modal-title').textContent = item.title;
+      document.getElementById('modal-cat').textContent   = item.category || '';
+      document.getElementById('modal-content').textContent = item.content || item.summary || '';
+
+      if (type === 'news') {
+        document.getElementById('modal-date').textContent = formatDate(item.date);
+        const imgWrap = document.getElementById('modal-img-wrap');
+        imgWrap.innerHTML = item.image
+          ? `<img src="${ikUrl(resolveImg(item.image), 'w-680,h-280,c-at_max,q-80,f-auto')}" alt="${item.title}" class="modal-img" onerror="this.style.display='none'">`
+          : `<div class="modal-img-placeholder"></div>`;
+      } else {
+        const d = new Date(item.date_start);
+        document.getElementById('modal-date').textContent =
+          `${d.getDate()} ${d.toLocaleDateString('ar-EG',{month:'long'})} ${d.getFullYear()} - ${item.time || ''} - ${item.location || ''}`;
+        document.getElementById('modal-img-wrap').innerHTML = '';
+      }
+
+      document.getElementById('item-modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(e) {
+      if (e.target === document.getElementById('item-modal')) closeModalDirect();
+    }
+
+    function closeModalDirect() {
+      document.getElementById('item-modal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  </script>
+</body>
+</html>
